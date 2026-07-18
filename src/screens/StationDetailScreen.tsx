@@ -48,9 +48,9 @@ export function StationDetailScreen({ stationId, onBack }: Props) {
 
       <div className="mb-4 flex gap-4 border-b border-outline-variant">
         {([
-          ['algo', 'Алгоритм'],
-          ['check', 'Чек-лист'],
+          ['algo', 'Полный план'],
           ['order', 'Тренировка порядка'],
+          ['check', 'Чек-лист'],
         ] as [Tab, string][]).map(([key, label]) => (
           <button
             key={key}
@@ -65,15 +65,21 @@ export function StationDetailScreen({ stationId, onBack }: Props) {
         ))}
       </div>
 
-      {tab === 'algo' &&
-        station.steps.map((step, i) => (
-          <div key={i} className="flex gap-3 border-b border-outline-variant py-3.5 last:border-none">
-            <div className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full bg-secondary-container text-xs font-semibold text-on-secondary-container">
-              {i + 1}
+      {tab === 'algo' && (
+        <>
+          <p className="mb-3 text-xs text-on-surface-variant">
+            Пошаговый алгоритм по паспорту станции — этот же порядок используется в тренировке.
+          </p>
+          {station.steps.map((step, i) => (
+            <div key={i} className="flex gap-3 border-b border-outline-variant py-3.5 last:border-none">
+              <div className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full bg-secondary-container text-xs font-semibold text-on-secondary-container">
+                {i + 1}
+              </div>
+              <p className="text-sm leading-relaxed">{step}</p>
             </div>
-            <p className="text-sm leading-relaxed">{step}</p>
-          </div>
-        ))}
+          ))}
+        </>
+      )}
 
       {tab === 'check' &&
         station.checklist.map((block) => (

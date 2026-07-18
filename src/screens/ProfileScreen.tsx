@@ -3,6 +3,7 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { useAuth } from '@/lib/useAuth';
 import { fullSync } from '@/lib/sync';
 import { Icon } from '@/components/Icon';
+import { AI_MODELS, getAiSettings, saveAiSettings } from '@/lib/aiSettings';
 
 export function ProfileScreen() {
   const { mode, setMode, seedHex, setSeedHex, sourceKey, setSourceKey } = useTheme();
@@ -11,6 +12,22 @@ export function ProfileScreen() {
   const [sentTo, setSentTo] = useState<string | null>(null);
   const [authError, setAuthError] = useState<string | null>(null);
   const [syncState, setSyncState] = useState<'idle' | 'syncing' | 'done' | 'error'>('idle');
+  const [aiKey, setAiKey] = useState('');
+  const [aiModel, setAiModel] = useState(AI_MODELS[0].id);
+  const [aiSaved, setAiSaved] = useState(false);
+
+  useEffect(() => {
+    const s = getAiSettings();
+    setAiKey(s.apiKey);
+    setAiModel(s.model);
+  }, []);
+
+  function handleSaveAi(e: React.FormEvent) {
+    e.preventDefault();
+    saveAiSettings({ apiKey: aiKey.trim(), model: aiModel });
+    setAiSaved(true);
+    setTimeout(() => setAiSaved(false), 2000);
+  }
 
   useEffect(() => {
     if (!session) return;
@@ -34,8 +51,11 @@ export function ProfileScreen() {
 
       {!configured && (
         <div className="mb-4 rounded-m3-md bg-secondary-container p-3.5 text-sm text-on-secondary-container">
-          Supabase не настроен (нет переменных окружения) — приложение работает в локальном режиме,
-          прогресс хранится только на этом устройстве.
+          <b>Supabase не настроен.</b> Прогресс хранится только на этом устройстве, без синхронизации.
+          Чтобы включить вход и синк между устройствами — добавь секреты{' '}
+          <code className="rounded bg-surface px-1 py-0.5 text-xs">VITE_SUPABASE_URL</code> и{' '}
+          <code className="rounded bg-surface px-1 py-0.5 text-xs">VITE_SUPABASE_ANON_KEY</code> в
+          Settings → Secrets and variables → Actions репозитория на GitHub и пересобери сайт (детали в README).
         </div>
       )}
 
@@ -147,6 +167,56 @@ export function ProfileScreen() {
           </p>
         )}
       </div>
+
+      <h2 className="mb-2 text-sm font-semibold text-on-surface-variant">AI-репетитор</h2>
+      <form onSubmit={handleSaveAi} className="mb-4 rounded-m3-md bg-surface-container-low p-3.5">
+        <p className="mb-3 text-xs text-on-surface-variant">
+          Через OpenRouter — единый ключ для доступа к разным моделям. Получить ключ:{' '}
+          <a
+            href="https://openrouter.ai/keys"
+            target="_blank"
+            rel="noreferrer"
+            className="text-primary underline"
+          >
+            openrouter.ai/keys
+          </a>
+          . Ключ хранится только в этом браузере (localStorage), никуда, кроме OpenRouter, не уходит.
+        </p>
+
+        <label className="mb-1 block text-xs text-on-surface-variant">API-ключ OpenRouter</label>
+        <input
+          type="password"
+          value={aiKey}
+          onChange={(e) => setAiKey(e.target.value)}
+          placeholder="sk-or-v1-..."
+          className="mb-3 w-full rounded-m3-sm border border-outline-variant bg-surface px-3 py-2 text-sm"
+        />
+
+        <label className="mb-1 block text-xs text-on-surface-variant">Модель</label>
+        <div className="mb-3 flex flex-col gap-1.5">
+          {AI_MODELS.map((m) => (
+            <label
+              key={m.id}
+              className={`flex items-center gap-2.5 rounded-m3-sm border p-2.5 text-sm ${
+                aiModel === m.id ? 'border-primary bg-primary-container' : 'border-outline-variant'
+              }`}
+            >
+              <input
+                type="radio"
+                name="ai-model"
+                checked={aiModel === m.id}
+                onChange={() => setAiModel(m.id)}
+                className="accent-[rgb(var(--m3-primary))]"
+              />
+              {m.label}
+            </label>
+          ))}
+        </div>
+
+        <button type="submit" className="w-full rounded-full bg-primary py-2.5 text-sm font-semibold text-on-primary">
+          {aiSaved ? 'Сохранено ✓' : 'Сохранить настройки AI'}
+        </button>
+      </form>
     </div>
   );
 }
