@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Fallback-значения до первого applyPalette() — чтобы не было FOUC */
+  --m3-primary: 15 110 86;
+  --m3-on-primary: 255 255 255;
+  --m3-primary-container: 206 238 224;
+  --m3-on-primary-container: 4 52 44;
+  --m3-secondary-container: 221 229 220;
+  --m3-on-secondary-container: 26 30 25;
+  --m3-surface: 251 251 246;
+  --m3-surface-container-low: 242 243 236;
+  --m3-surface-container: 236 237 230;
+  --m3-surface-container-high: 230 231 224;
+  --m3-on-surface: 26 28 25;
+  --m3-on-surface-variant: 66 71 63;
+  --m3-outline: 114 121 110;
+  --m3-outline-variant: 194 201 188;
+  --m3-error: 186 26 26;
+}
+
+* { box-sizing: border-box; }
+body { @apply bg-surface text-on-surface; font-family: -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; }
+
+.msr {
+  font-family: 'Material Symbols Rounded';
+  font-weight: 400;
+  font-style: normal;
+  display: inline-block;
+  line-height: 1;
+  vertical-align: middle;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+.msr.fill { font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24; }
