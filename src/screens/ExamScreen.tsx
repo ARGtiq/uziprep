@@ -1,8 +1,10 @@
 import { useState } from 'react';
+import { useLiveQuery } from 'dexie-react-hooks';
 import { STATIONS } from '@/data/stations';
 import { StepOrderingGame } from '@/components/StepOrderingGame';
 import { MixedExam } from '@/components/MixedExam';
 import { Icon } from '@/components/Icon';
+import { listExamAttempts } from '@/lib/db';
 
 type ExamMode = 'menu' | 'ordering-pick' | 'ordering-play' | 'mixed';
 
@@ -21,6 +23,7 @@ export function ExamScreen() {
   const orderableStations = STATIONS.filter((s) => s.steps.length >= 3);
   const availableQuestions = STATIONS.flatMap((s) => s.quiz ?? []).length;
   const canRunMixed = availableQuestions > 0 || orderableStations.length > 0;
+  const attempts = useLiveQuery(() => listExamAttempts(5), [], []) ?? [];
 
   if (mode === 'mixed') {
     return <MixedExam questionCount={format.count} secondsPerRun={format.seconds} onExit={() => setMode('menu')} />;
@@ -120,6 +123,34 @@ export function ExamScreen() {
           <div className="text-xs text-on-surface-variant">Отдельно потренироваться на одной станции</div>
         </div>
       </button>
+
+      {attempts.length > 0 && (
+        <div className="mt-6">
+          <h2 className="mb-2 text-sm font-semibold text-on-surface-variant">История попыток</h2>
+          <div className="flex flex-col gap-1.5">
+            {attempts.map((a) => {
+              const percent = Math.round(a.scoreRatio * 100);
+              const date = new Date(a.finishedAt);
+              return (
+                <div key={a.id} className="flex items-center gap-3 rounded-m3-md bg-surface-container-low p-3">
+                  <div
+                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+                      percent >= 70 ? 'bg-primary-container text-on-primary-container' : 'bg-secondary-container text-on-secondary-container'
+                    }`}
+                  >
+                    {percent}%
+                  </div>
+                  <div className="min-w-0 flex-1 text-xs text-on-surface-variant">
+                    <span className="font-medium text-on-surface">{a.format} заданий</span>
+                    {!a.completed && ' · не завершено'} · {a.answeredItems}/{a.totalItems} отвечено ·{' '}
+                    {date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

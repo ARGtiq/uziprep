@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { STATIONS } from '@/data/stations';
 import type { QuizQuestion, Station } from '@/types/station';
 import { StepOrderingGame } from '@/components/StepOrderingGame';
 import { Icon } from '@/components/Icon';
+import { saveExamAttempt } from '@/lib/db';
 
 type ExamItem =
   | { kind: 'mcq'; question: QuizQuestion }
@@ -53,6 +54,44 @@ export function MixedExam({ questionCount, secondsPerRun, onExit }: Props) {
   const [mcqSelected, setMcqSelected] = useState<number | null>(null);
   const [secondsLeft, setSecondsLeft] = useState(secondsPerRun);
   const [finished, setFinished] = useState(false);
+  const startedAtRef = useRef(Date.now());
+  const savedRef = useRef(false);
+  const scoresRef = useRef(scores);
+  scoresRef.current = scores;
+
+  /**
+   * Сохраняет попытку экзамена в историю: и при нормальном завершении
+   * (completed=true), и при досрочном выходе (completed=false, но с
+   * тем, что успел ответить) — раньше прогресс при выходе посередине
+   * просто исчезал молча. Читает scoresRef, а не scores напрямую,
+   * потому что вызывается из cleanup-эффекта с пустым deps-массивом,
+   * где обычное замыкание держало бы устаревший пустой массив.
+   */
+  function persistAttempt(completed: boolean) {
+    if (savedRef.current || items.length === 0) return;
+    const answered = scoresRef.current.filter((s): s is number => s !== null);
+    if (answered.length === 0 && !completed) return; // ничего не отвечено — нечего сохранять
+    savedRef.current = true;
+    const scoreRatio = answered.length ? answered.reduce((a, b) => a + b, 0) / items.length : 0;
+    saveExamAttempt({
+      format: questionCount,
+      totalItems: items.length,
+      answeredItems: answered.length,
+      scoreRatio,
+      completed,
+      startedAt: startedAtRef.current,
+      finishedAt: Date.now(),
+    });
+  }
+
+  useEffect(() => {
+    // Сохраняем незавершённую попытку, если компонент размонтировался
+    // не через штатное завершение (например, кнопка "выйти" уже вызвала
+    // persistAttempt сама — тут срабатывает только как страховка на
+    // случай смены вкладки/сворачивания SPA-роута).
+    return () => persistAttempt(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (finished) return;
@@ -63,6 +102,16 @@ export function MixedExam({ questionCount, secondsPerRun, onExit }: Props) {
     const t = setTimeout(() => setSecondsLeft((s) => s - 1), 1000);
     return () => clearTimeout(t);
   }, [secondsLeft, finished]);
+
+  useEffect(() => {
+    if (finished) persistAttempt(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [finished]);
+
+  function handleExit() {
+    persistAttempt(false);
+    onExit();
+  }
 
   if (items.length === 0) {
     return (
@@ -130,7 +179,7 @@ export function MixedExam({ questionCount, secondsPerRun, onExit }: Props) {
   return (
     <div>
       <div className="mb-5 flex items-center gap-3">
-        <button onClick={onExit} aria-label="Выйти" className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-container">
+        <button onClick={handleExit} aria-label="Выйти" className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-container">
           <Icon name="close" size={18} />
         </button>
         <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-surface-container">
