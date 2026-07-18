@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { getStationById } from '@/data/stations';
 import { getProgress, saveProgress } from '@/lib/db';
 import { StepOrderingGame } from '@/components/StepOrderingGame';
+import { Icon } from '@/components/Icon';
 
 type Tab = 'algo' | 'check' | 'order';
 
@@ -35,9 +36,9 @@ export function StationDetailScreen({ stationId, onBack }: Props) {
         <button
           onClick={onBack}
           aria-label="Назад"
-          className="msr flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-container"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-container"
         >
-          arrow_back
+          <Icon name="arrow_back" size={18} />
         </button>
         <div>
           <div className="text-xs font-semibold uppercase tracking-wide text-primary">{station.category}</div>

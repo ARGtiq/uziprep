@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { Station } from '@/types/station';
+import { Icon } from '@/components/Icon';
 
 interface CardItem {
   key: string;
@@ -99,31 +100,19 @@ export function StepOrderingGame({ station, onFinish }: Props) {
                   : 'bg-surface-container-low border-transparent cursor-grab active:cursor-grabbing',
               ].join(' ')}
             >
-              <span className="msr text-on-surface-variant" aria-hidden="true">drag_indicator</span>
+              <Icon name="drag_indicator" size={18} className="text-on-surface-variant shrink-0" />
               <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-secondary-container text-xs font-semibold text-on-secondary-container">
                 {i + 1}
               </div>
               <p className="text-sm flex-1">{card.text}</p>
-              {checked && (
-                <span className="msr text-base" aria-hidden="true">
-                  {isCorrect ? 'check_circle' : 'cancel'}
-                </span>
-              )}
+              {checked && <Icon name={isCorrect ? 'check_circle' : 'cancel'} size={18} className={isCorrect ? 'text-primary' : 'text-error'} />}
               {!checked && (
                 <div className="flex flex-col -my-1 md:hidden">
-                  <button
-                    aria-label="Переместить выше"
-                    className="msr text-lg leading-none text-on-surface-variant"
-                    onClick={() => moveCard(i, -1)}
-                  >
-                    keyboard_arrow_up
+                  <button aria-label="Переместить выше" className="text-on-surface-variant" onClick={() => moveCard(i, -1)}>
+                    <Icon name="keyboard_arrow_up" size={18} />
                   </button>
-                  <button
-                    aria-label="Переместить ниже"
-                    className="msr text-lg leading-none text-on-surface-variant"
-                    onClick={() => moveCard(i, 1)}
-                  >
-                    keyboard_arrow_down
+                  <button aria-label="Переместить ниже" className="text-on-surface-variant" onClick={() => moveCard(i, 1)}>
+                    <Icon name="keyboard_arrow_down" size={18} />
                   </button>
                 </div>
               )}
@@ -151,9 +140,23 @@ export function StepOrderingGame({ station, onFinish }: Props) {
       </div>
 
       {checked && (
-        <p className="mt-3 text-center text-sm text-on-surface-variant">
+        <div className="mt-3 text-center text-sm text-on-surface-variant">
           Верно расставлено: {cards.filter((c, i) => c.originalIndex === i).length} из {cards.length}
-        </p>
+        </div>
+      )}
+
+      {checked && cards.some((c, i) => c.originalIndex !== i) && (
+        <div className="mt-4">
+          <h2 className="mb-2 text-sm font-semibold text-on-surface-variant">Правильный порядок</h2>
+          <ol className="flex flex-col gap-1.5">
+            {station.steps.map((step, i) => (
+              <li key={i} className="flex gap-2.5 text-sm">
+                <span className="shrink-0 text-on-surface-variant">{i + 1}.</span>
+                <span>{step}</span>
+              </li>
+            ))}
+          </ol>
+        </div>
       )}
     </div>
   );

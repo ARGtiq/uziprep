@@ -1,6 +1,8 @@
+import { Icon, type IconName } from '@/components/Icon';
+
 export type Tab = 'stations' | 'exam' | 'ai' | 'profile';
 
-const ITEMS: { id: Tab; label: string; icon: string }[] = [
+const ITEMS: { id: Tab; label: string; icon: IconName }[] = [
   { id: 'stations', label: 'Станции', icon: 'grid_view' },
   { id: 'exam', label: 'Экзамен', icon: 'timer' },
   { id: 'ai', label: 'AI-репетитор', icon: 'auto_awesome' },
@@ -26,12 +28,11 @@ export function NavBar({ active, onChange, variant }: Props) {
             }`}
           >
             <span
-              className={`msr flex h-8 w-14 items-center justify-center rounded-full text-lg ${
-                active === it.id ? 'fill bg-primary-container text-on-primary-container' : ''
+              className={`flex h-8 w-14 items-center justify-center rounded-full ${
+                active === it.id ? 'bg-primary-container text-on-primary-container' : ''
               }`}
-              aria-hidden="true"
             >
-              {it.icon}
+              <Icon name={it.icon} size={20} strokeWidth={active === it.id ? 2.4 : 2} />
             </span>
             {it.label}
           </button>
@@ -45,12 +46,11 @@ export function NavBar({ active, onChange, variant }: Props) {
       {ITEMS.map((it) => (
         <button key={it.id} onClick={() => onChange(it.id)} className="flex flex-1 flex-col items-center gap-0.5">
           <span
-            className={`msr flex h-[28px] w-[52px] items-center justify-center rounded-full text-lg ${
-              active === it.id ? 'fill bg-primary-container text-on-primary-container' : 'text-on-surface-variant'
+            className={`flex h-[28px] w-[52px] items-center justify-center rounded-full ${
+              active === it.id ? 'bg-primary-container text-on-primary-container' : 'text-on-surface-variant'
             }`}
-            aria-hidden="true"
           >
-            {it.icon}
+            <Icon name={it.icon} size={20} strokeWidth={active === it.id ? 2.4 : 2} />
           </span>
           <span className={`text-[11px] ${active === it.id ? 'font-semibold text-on-surface' : 'text-on-surface-variant'}`}>
             {it.label}

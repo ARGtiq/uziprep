@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { STATIONS } from '@/data/stations';
 import type { QuizQuestion } from '@/types/station';
+import { Icon } from '@/components/Icon';
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -66,9 +67,7 @@ export function McqExam({ questionCount, secondsPerRun, onExit }: Props) {
     const ratio = correct / questions.length;
     return (
       <div className="text-center py-6">
-        <span className="msr text-5xl text-primary" aria-hidden="true">
-          {ratio >= 0.7 ? 'workspace_premium' : 'refresh'}
-        </span>
+        <Icon name={ratio >= 0.7 ? 'workspace_premium' : 'refresh'} size={48} className="text-primary mx-auto" />
         <h1 className="mt-3 text-xl font-semibold">
           {correct} из {questions.length}
         </h1>
@@ -102,8 +101,8 @@ export function McqExam({ questionCount, secondsPerRun, onExit }: Props) {
   return (
     <div>
       <div className="mb-5 flex items-center gap-3">
-        <button onClick={onExit} aria-label="Выйти" className="msr flex h-9 w-9 items-center justify-center rounded-full bg-surface-container">
-          close
+        <button onClick={onExit} aria-label="Выйти" className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-container">
+          <Icon name="close" size={18} />
         </button>
         <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-surface-container">
           <div
@@ -117,7 +116,7 @@ export function McqExam({ questionCount, secondsPerRun, onExit }: Props) {
             secondsLeft <= 30 ? 'bg-error/15 text-error' : 'bg-primary-container text-on-primary-container'
           }`}
         >
-          <span className="msr text-sm" aria-hidden="true">schedule</span>
+          <Icon name="schedule" size={14} />
           {formatTime(secondsLeft)}
         </div>
       </div>
@@ -148,9 +147,7 @@ export function McqExam({ questionCount, secondsPerRun, onExit }: Props) {
                 {isSelected && <span className="h-2.5 w-2.5 rounded-full bg-primary" />}
               </span>
               {opt}
-              {showResult && isCorrectOption && (
-                <span className="msr ml-auto text-base text-primary" aria-hidden="true">check_circle</span>
-              )}
+              {showResult && isCorrectOption && <Icon name="check_circle" size={18} className="ml-auto text-primary" />}
             </button>
           );
         })}

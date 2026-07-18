@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { STATIONS } from '@/data/stations';
 import { StepOrderingGame } from '@/components/StepOrderingGame';
 import { McqExam } from '@/components/McqExam';
+import { Icon } from '@/components/Icon';
 
 type ExamMode = 'menu' | 'ordering-pick' | 'ordering-play' | 'mcq';
 
@@ -28,7 +29,7 @@ export function ExamScreen() {
     return (
       <div>
         <button className="mb-4 flex items-center gap-1 text-sm text-on-surface-variant" onClick={() => setMode('menu')}>
-          <span className="msr text-base" aria-hidden="true">arrow_back</span> Назад
+          <Icon name="arrow_back" size={16} /> Назад
         </button>
         <h1 className="text-xl font-semibold mb-1">Выберите станцию</h1>
         <p className="text-sm text-on-surface-variant mb-4">Соберите правильную последовательность действий.</p>
@@ -39,8 +40,8 @@ export function ExamScreen() {
               onClick={() => { setStationId(s.id); setLastScore(null); setMode('ordering-play'); }}
               className="flex items-center gap-3 rounded-m3-md bg-surface-container-low p-3 text-left"
             >
-              <span className="msr flex h-11 w-11 items-center justify-center rounded-m3-md bg-primary-container text-on-primary-container" aria-hidden="true">
-                {s.icon}
+              <span className="flex h-11 w-11 items-center justify-center rounded-m3-md bg-primary-container text-on-primary-container">
+                <Icon name={s.icon as any} size={22} />
               </span>
               <div>
                 <div className="text-sm font-semibold">{s.title}</div>
@@ -58,7 +59,7 @@ export function ExamScreen() {
     return (
       <div>
         <button className="mb-4 flex items-center gap-1 text-sm text-on-surface-variant" onClick={() => setMode('ordering-pick')}>
-          <span className="msr text-base" aria-hidden="true">arrow_back</span> Другая станция
+          <Icon name="arrow_back" size={16} /> Другая станция
         </button>
         <h1 className="text-xl font-semibold mb-4">{station.title}</h1>
         <StepOrderingGame station={station} onFinish={setLastScore} />
@@ -110,8 +111,8 @@ export function ExamScreen() {
         onClick={() => setMode('ordering-pick')}
         className="flex w-full items-center gap-3 rounded-m3-md bg-secondary-container p-3.5 text-left"
       >
-        <span className="msr flex h-11 w-11 shrink-0 items-center justify-center rounded-m3-md bg-primary-container text-on-primary-container" aria-hidden="true">
-          drag_indicator
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-m3-md bg-primary-container text-on-primary-container">
+          <Icon name="drag_indicator" size={22} />
         </span>
         <div>
           <b className="text-sm text-on-secondary-container">Собери последовательность</b>
