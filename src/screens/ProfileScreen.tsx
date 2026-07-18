@@ -24,9 +24,9 @@ export function ProfileScreen() {
 
   const [aiProvider, setAiProvider] = useState<AiProvider>('google');
   const [openrouterKey, setOpenrouterKey] = useState('');
-  const [openrouterModel, setOpenrouterModel] = useState(OPENROUTER_MODELS[0].id);
+  const [openrouterModel, setOpenrouterModel] = useState<string>(OPENROUTER_MODELS[0].id);
   const [googleKey, setGoogleKey] = useState('');
-  const [googleModel, setGoogleModel] = useState(GOOGLE_MODELS[0].id);
+  const [googleModel, setGoogleModel] = useState<string>(GOOGLE_MODELS[0].id);
   const [aiSaved, setAiSaved] = useState(false);
   const [extractingColor, setExtractingColor] = useState(false);
 
