@@ -20,6 +20,7 @@ function shuffle<T>(arr: T[]): T[] {
 interface Props {
   station: Station;
   onFinish: (scoreRatio: number) => void;
+  allowRetry?: boolean;
 }
 
 /**
@@ -27,8 +28,12 @@ interface Props {
  * в случайном порядке, пользователь перетаскивает их в правильный.
  * После проверки — какие карточки стоят на верном месте (зелёные),
  * какие нет (красные), с показом верного порядка.
+ *
+ * allowRetry=false используется внутри смешанного экзамена — там одна
+ * попытка на вопрос, кнопку "Попробовать ещё раз" прячем, переход к
+ * следующему заданию делает родительский компонент (MixedExam).
  */
-export function StepOrderingGame({ station, onFinish }: Props) {
+export function StepOrderingGame({ station, onFinish, allowRetry = true }: Props) {
   const initial = useMemo<CardItem[]>(
     () => shuffle(station.steps.map((text, i) => ({ key: `${station.id}-${i}`, text, originalIndex: i }))),
     [station.id],
@@ -129,14 +134,14 @@ export function StepOrderingGame({ station, onFinish }: Props) {
           >
             Проверить порядок
           </button>
-        ) : (
+        ) : allowRetry ? (
           <button
             onClick={reset}
             className="flex-1 rounded-full border border-outline-variant py-3 text-sm font-semibold"
           >
             Попробовать ещё раз
           </button>
-        )}
+        ) : null}
       </div>
 
       {checked && (

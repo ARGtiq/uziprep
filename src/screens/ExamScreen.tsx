@@ -1,15 +1,15 @@
 import { useState } from 'react';
 import { STATIONS } from '@/data/stations';
 import { StepOrderingGame } from '@/components/StepOrderingGame';
-import { McqExam } from '@/components/McqExam';
+import { MixedExam } from '@/components/MixedExam';
 import { Icon } from '@/components/Icon';
 
-type ExamMode = 'menu' | 'ordering-pick' | 'ordering-play' | 'mcq';
+type ExamMode = 'menu' | 'ordering-pick' | 'ordering-play' | 'mixed';
 
 const FORMATS = [
-  { count: 10, seconds: 5 * 60, label: 'Быстрая проверка', sub: '10 вопросов · 5 минут' },
-  { count: 20, seconds: 10 * 60, label: 'Стандартный экзамен', sub: '20 вопросов · 10 минут' },
-  { count: 40, seconds: 25 * 60, label: 'Полный экзамен', sub: '40 вопросов · 25 минут' },
+  { count: 10, seconds: 5 * 60, label: 'Быстрая проверка', sub: '~10 заданий · 5 минут' },
+  { count: 20, seconds: 10 * 60, label: 'Стандартный экзамен', sub: '~20 заданий · 10 минут' },
+  { count: 40, seconds: 25 * 60, label: 'Полный экзамен', sub: '~40 заданий · 25 минут' },
 ];
 
 export function ExamScreen() {
@@ -20,9 +20,10 @@ export function ExamScreen() {
 
   const orderableStations = STATIONS.filter((s) => s.steps.length >= 3);
   const availableQuestions = STATIONS.flatMap((s) => s.quiz ?? []).length;
+  const canRunMixed = availableQuestions > 0 || orderableStations.length > 0;
 
-  if (mode === 'mcq') {
-    return <McqExam questionCount={format.count} secondsPerRun={format.seconds} onExit={() => setMode('menu')} />;
+  if (mode === 'mixed') {
+    return <MixedExam questionCount={format.count} secondsPerRun={format.seconds} onExit={() => setMode('menu')} />;
   }
 
   if (mode === 'ordering-pick') {
@@ -32,7 +33,7 @@ export function ExamScreen() {
           <Icon name="arrow_back" size={16} /> Назад
         </button>
         <h1 className="text-xl font-semibold mb-1">Выберите станцию</h1>
-        <p className="text-sm text-on-surface-variant mb-4">Соберите правильную последовательность действий.</p>
+        <p className="text-sm text-on-surface-variant mb-4">Соберите правильную последовательность действий, без таймера.</p>
         <div className="flex flex-col gap-2">
           {orderableStations.map((s) => (
             <button
@@ -74,7 +75,7 @@ export function ExamScreen() {
     <div>
       <h1 className="text-xl font-semibold mb-1">Симуляция экзамена</h1>
       <p className="text-sm text-on-surface-variant mb-5">
-        Случайные вопросы из всех станций с таймером и подсчётом баллов, либо тренировка порядка действий.
+        Смешанный формат: тестовые вопросы и задания "собери порядок" по всем станциям, с общим таймером.
       </p>
 
       <h2 className="mb-2 text-sm font-semibold text-on-surface-variant">Выберите формат</h2>
@@ -97,14 +98,14 @@ export function ExamScreen() {
       ))}
 
       <button
-        onClick={() => setMode('mcq')}
-        disabled={availableQuestions === 0}
+        onClick={() => setMode('mixed')}
+        disabled={!canRunMixed}
         className="mb-4 w-full rounded-full bg-primary py-3 text-sm font-semibold text-on-primary disabled:opacity-40"
       >
         Начать: {format.label}
       </button>
-      {availableQuestions === 0 && (
-        <p className="mb-4 text-xs text-on-surface-variant">В базе пока нет вопросов — добавь их в данные станций.</p>
+      {!canRunMixed && (
+        <p className="mb-4 text-xs text-on-surface-variant">В базе пока нет вопросов и станций для экзамена.</p>
       )}
 
       <button
@@ -115,8 +116,8 @@ export function ExamScreen() {
           <Icon name="drag_indicator" size={22} />
         </span>
         <div>
-          <b className="text-sm text-on-secondary-container">Собери последовательность</b>
-          <div className="text-xs text-on-surface-variant">Перетащите шаги станции в правильном порядке</div>
+          <b className="text-sm text-on-secondary-container">Тренировка порядка без таймера</b>
+          <div className="text-xs text-on-surface-variant">Отдельно потренироваться на одной станции</div>
         </div>
       </button>
     </div>
