@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
-import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { getSupabase, isSupabaseConfigured } from '@/lib/supabase';
 
 type AuthErrorKind = 'expired' | 'invalid' | null;
 
@@ -14,13 +14,6 @@ interface AuthState {
   signOut: () => Promise<void>;
 }
 
-/**
- * Supabase кладёt ошибку истёкшей/недействительной magic-link ссылки
- * в hash редиректа (#error=access_denied&error_code=otp_expired&...),
- * а не в обычный query. Разбираем один раз при загрузке и сразу же
- * чистим hash из адресной строки, чтобы при обновлении страницы
- * ошибка не всплывала повторно.
- */
 function readAuthErrorFromUrl(): AuthErrorKind {
   if (!window.location.hash.includes('error')) return null;
   const params = new URLSearchParams(window.location.hash.slice(1));
@@ -32,12 +25,18 @@ function readAuthErrorFromUrl(): AuthErrorKind {
 
 export function useAuth(): AuthState {
   const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(isSupabaseConfigured);
+  const [loading, setLoading] = useState(isSupabaseConfigured());
   const [authError, setAuthError] = useState<AuthErrorKind>(null);
+  const configured = isSupabaseConfigured();
 
   useEffect(() => {
     setAuthError(readAuthErrorFromUrl());
-    if (!supabase) return;
+    const supabase = getSupabase();
+    if (!supabase) {
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
       setLoading(false);
@@ -47,9 +46,14 @@ export function useAuth(): AuthState {
       if (s) setAuthError(null);
     });
     return () => sub.subscription.unsubscribe();
-  }, []);
+    // Перечитываем при смене configured — например, после того как
+    // пользователь сохранил настройки Supabase прямо в приложении и
+    // клиент только что появился (был null).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [configured]);
 
   async function signInWithEmail(email: string) {
+    const supabase = getSupabase();
     if (!supabase) return { error: 'Supabase не настроен' };
     setAuthError(null);
     const { error } = await supabase.auth.signInWithOtp({
@@ -64,9 +68,10 @@ export function useAuth(): AuthState {
   }
 
   async function signOut() {
+    const supabase = getSupabase();
     if (!supabase) return;
     await supabase.auth.signOut();
   }
 
-  return { session, loading, configured: isSupabaseConfigured, authError, signInWithEmail, resendMagicLink, signOut };
+  return { session, loading, configured, authError, signInWithEmail, resendMagicLink, signOut };
 }

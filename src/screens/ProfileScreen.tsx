@@ -12,6 +12,7 @@ import {
 } from '@/lib/aiSettings';
 
 import { extractDominantColorHex } from '@/theme/sources/imageSource';
+import { getSupabaseSettings, saveSupabaseSettings, clearSupabaseSettings } from '@/lib/supabase';
 
 export function ProfileScreen() {
   const { mode, setMode, seedHex, setSeedHex, sourceKey, setSourceKey } = useTheme();
@@ -29,6 +30,28 @@ export function ProfileScreen() {
   const [googleModel, setGoogleModel] = useState<string>(GOOGLE_MODELS[0].id);
   const [aiSaved, setAiSaved] = useState(false);
   const [extractingColor, setExtractingColor] = useState(false);
+  const [sbUrl, setSbUrl] = useState('');
+  const [sbAnonKey, setSbAnonKey] = useState('');
+  const [sbSaved, setSbSaved] = useState(false);
+
+  useEffect(() => {
+    const s = getSupabaseSettings();
+    setSbUrl(s.url);
+    setSbAnonKey(s.anonKey);
+  }, []);
+
+  function handleSaveSupabase(e: React.FormEvent) {
+    e.preventDefault();
+    saveSupabaseSettings({ url: sbUrl.trim(), anonKey: sbAnonKey.trim() });
+    setSbSaved(true);
+    setTimeout(() => setSbSaved(false), 2000);
+  }
+
+  function handleClearSupabase() {
+    clearSupabaseSettings();
+    setSbUrl('');
+    setSbAnonKey('');
+  }
 
   async function handlePickImage(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -96,11 +119,46 @@ export function ProfileScreen() {
       <h1 className="mb-4 text-xl font-semibold">Профиль</h1>
 
       {!configured && (
-        <div className="mb-4 rounded-m3-md bg-secondary-container p-3.5 text-sm text-on-secondary-container">
-          <b>Supabase не настроен.</b> Прогресс хранится только на этом устройстве, без синхронизации.
-          Добавь секреты <code className="rounded bg-surface px-1 py-0.5 text-xs">VITE_SUPABASE_URL</code> и{' '}
-          <code className="rounded bg-surface px-1 py-0.5 text-xs">VITE_SUPABASE_ANON_KEY</code> в Settings →
-          Secrets and variables → Actions репозитория на GitHub и пересобери сайт.
+        <form onSubmit={handleSaveSupabase} className="mb-4 rounded-m3-md bg-secondary-container p-3.5 text-on-secondary-container">
+          <b className="mb-1 block text-sm">Supabase не настроен</b>
+          <p className="mb-3 text-xs">
+            Прогресс хранится только на этом устройстве. Чтобы включить вход и синхронизацию — создай проект на{' '}
+            <a href="https://supabase.com" target="_blank" rel="noreferrer" className="underline">
+              supabase.com
+            </a>
+            , выполни <code className="rounded bg-surface px-1 py-0.5">supabase/schema.sql</code> из репозитория в его SQL
+            Editor, и вставь сюда данные из Project Settings → API.
+          </p>
+          <label className="mb-1 block text-xs">Project URL</label>
+          <input
+            value={sbUrl}
+            onChange={(e) => setSbUrl(e.target.value)}
+            placeholder="https://xxxxxxxx.supabase.co"
+            className="mb-2 w-full rounded-m3-sm border border-outline-variant bg-surface px-3 py-2 text-sm text-on-surface"
+          />
+          <label className="mb-1 block text-xs">Anon (publishable) key</label>
+          <input
+            value={sbAnonKey}
+            onChange={(e) => setSbAnonKey(e.target.value)}
+            placeholder="eyJhbGci..."
+            className="mb-3 w-full rounded-m3-sm border border-outline-variant bg-surface px-3 py-2 text-sm text-on-surface"
+          />
+          <button type="submit" className="w-full rounded-full bg-primary py-2.5 text-sm font-semibold text-on-primary">
+            {sbSaved ? 'Сохранено ✓' : 'Сохранить и подключить'}
+          </button>
+          <p className="mt-2 text-[11px] opacity-80">
+            Ключ хранится в этом браузере. Anon-ключ безопасно светить на клиенте — доступ к данным ограничивает
+            Row Level Security на стороне Supabase, не секретность ключа.
+          </p>
+        </form>
+      )}
+
+      {configured && (
+        <div className="mb-4 flex items-center justify-between rounded-m3-md bg-surface-container-low p-3.5 text-xs text-on-surface-variant">
+          <span>Supabase подключён: {getSupabaseSettings().url}</span>
+          <button onClick={handleClearSupabase} className="text-error underline">
+            Отключить
+          </button>
         </div>
       )}
 

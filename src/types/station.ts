@@ -12,16 +12,36 @@ export interface QuizQuestion {
   correctIndex: number;
 }
 
+/**
+ * Реальные станции ОСКЭ часто содержат несколько сценариев (например,
+ * УЗИ ОБП — печень / поджелудочная / правая почка / левая почка): общий
+ * брифинг станции один, но конкретный орган на исследование определяет
+ * АПК в день экзамена. У каждого сценария — свой дословный алгоритм и
+ * чек-лист по паспорту станции.
+ */
+export interface StationScenario {
+  name: string;
+  steps: string[];
+  checklist: ChecklistBlock[];
+}
+
 export interface Station {
   id: string;
   category: StationCategory;
   title: string;
-  icon: string; // Material Symbols glyph name
+  icon: string; // Material Symbols/Lucide glyph name (см. src/components/Icon.tsx)
   timeMinutes: number;
   description: string;
-  /** Шаги в правильном порядке — источник и для "Алгоритма", и для drag-n-drop режима */
+  /**
+   * Для станций с несколькими сценариями (scenarios заполнено) —
+   * steps/checklist ниже не используются напрямую, это данные первого
+   * сценария по умолчанию (для обратной совместимости старых мест кода).
+   * Новый код должен читать через getActiveSteps/getActiveChecklist
+   * с учётом выбранного сценария (см. src/data/stations.ts).
+   */
   steps: string[];
   checklist: ChecklistBlock[];
+  scenarios?: StationScenario[];
   quiz?: QuizQuestion[];
 }
 

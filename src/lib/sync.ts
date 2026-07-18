@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { getSupabase } from '@/lib/supabase';
 import { db } from '@/lib/db';
 import type { StationProgress } from '@/types/station';
 
@@ -17,6 +17,7 @@ interface RemoteRow {
  * работа приложения от этого не зависит (см. lib/supabase.ts).
  */
 export async function pushLocalChanges(userId: string) {
+  const supabase = getSupabase();
   if (!supabase) return;
   const pending = await db.syncQueue.where('synced').equals(0).toArray();
   if (pending.length === 0) return;
@@ -47,6 +48,7 @@ export async function pushLocalChanges(userId: string) {
  * pushLocalChanges.
  */
 export async function pullRemoteChanges(userId: string) {
+  const supabase = getSupabase();
   if (!supabase) return;
   const { data, error } = await supabase.from('progress').select('*').eq('user_id', userId);
   if (error || !data) return;

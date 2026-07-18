@@ -21,10 +21,25 @@ export function StationsScreen({ onOpenStation, onGoExam }: Props) {
     const station = STATIONS.find((s) => s.id === stationId);
     const prog = allProgress.find((p) => p.stationId === stationId);
     if (!station || !prog) return null;
-    const totalItems = station.checklist.reduce((sum, b) => sum + b.items.length, 0);
-    if (totalItems === 0) return null;
     const doneCount = Object.values(prog.checklistDone).filter(Boolean).length;
-    return doneCount / totalItems;
+    if (doneCount === 0) return null;
+
+    // Для станций с несколькими сценариями прогресс мог копиться в
+    // любом из них (ключи чек-листа теперь содержат имя сценария) —
+    // берём в знаменатель тот сценарий, где реально есть отмеченные
+    // пункты, а не всегда первый по умолчанию.
+    const scenarios = station.scenarios?.length ? station.scenarios : [{ name: 'default', steps: station.steps, checklist: station.checklist }];
+    let bestRatio = 0;
+    for (const sc of scenarios) {
+      const total = sc.checklist.reduce((sum, b) => sum + b.items.length, 0);
+      if (total === 0) continue;
+      const doneInScenario = sc.checklist.reduce(
+        (sum, b) => sum + b.items.filter((item) => prog.checklistDone[`${sc.name}::${b.block}::${item}`]).length,
+        0,
+      );
+      bestRatio = Math.max(bestRatio, doneInScenario / total);
+    }
+    return bestRatio;
   }
 
   return (

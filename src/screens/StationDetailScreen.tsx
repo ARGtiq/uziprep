@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { getStationById } from '@/data/stations';
 import { getProgress, saveProgress } from '@/lib/db';
 import { StepOrderingGame } from '@/components/StepOrderingGame';
@@ -14,11 +14,30 @@ interface Props {
 export function StationDetailScreen({ stationId, onBack }: Props) {
   const station = getStationById(stationId);
   const [tab, setTab] = useState<Tab>('algo');
+  const [scenarioIndex, setScenarioIndex] = useState(0);
   const [checklistDone, setChecklistDone] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     getProgress(stationId).then((p) => setChecklistDone(p.checklistDone));
+    setScenarioIndex(0);
   }, [stationId]);
+
+  // Многие станции ОСКЭ разыгрывают один из нескольких сценариев
+  // (например, УЗИ ОБП: печень / поджелудочная / правая почка / левая
+  // почка) — конкретный сценарий определяет АПК в день экзамена, но
+  // алгоритм и чек-лист у каждого свои. Если сценариев несколько,
+  // даём переключатель; если один — просто используем его без UI-шума.
+  const scenarios = station?.scenarios;
+  const hasMultipleScenarios = (scenarios?.length ?? 0) > 1;
+  const activeScenario = scenarios?.[scenarioIndex] ?? scenarios?.[0];
+  const activeSteps = activeScenario?.steps ?? station?.steps ?? [];
+  const activeChecklist = activeScenario?.checklist ?? station?.checklist ?? [];
+
+  const orderingStation = useMemo(() => {
+    if (!station) return null;
+    return { ...station, id: `${station.id}::${scenarioIndex}`, steps: activeSteps };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [station, scenarioIndex, activeSteps]);
 
   if (!station) return null;
 
@@ -46,6 +65,29 @@ export function StationDetailScreen({ stationId, onBack }: Props) {
         </div>
       </div>
 
+      {hasMultipleScenarios && (
+        <div className="mb-4">
+          <div className="mb-1.5 text-xs text-on-surface-variant">
+            Сценарий станции (определяется в день экзамена — можно потренировать любой):
+          </div>
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            {scenarios!.map((sc, i) => (
+              <button
+                key={sc.name}
+                onClick={() => setScenarioIndex(i)}
+                className={`shrink-0 rounded-full border px-3 py-1.5 text-xs whitespace-nowrap ${
+                  scenarioIndex === i
+                    ? 'border-transparent bg-primary-container font-semibold text-on-primary-container'
+                    : 'border-outline-variant text-on-surface-variant'
+                }`}
+              >
+                {sc.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="mb-4 flex gap-4 border-b border-outline-variant">
         {([
           ['algo', 'Полный план'],
@@ -68,9 +110,9 @@ export function StationDetailScreen({ stationId, onBack }: Props) {
       {tab === 'algo' && (
         <>
           <p className="mb-3 text-xs text-on-surface-variant">
-            Пошаговый алгоритм по паспорту станции — этот же порядок используется в тренировке.
+            Пошаговый алгоритм дословно по паспорту станции — этот же порядок используется в тренировке.
           </p>
-          {station.steps.map((step, i) => (
+          {activeSteps.map((step, i) => (
             <div key={i} className="flex gap-3 border-b border-outline-variant py-3.5 last:border-none">
               <div className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full bg-secondary-container text-xs font-semibold text-on-secondary-container">
                 {i + 1}
@@ -82,11 +124,11 @@ export function StationDetailScreen({ stationId, onBack }: Props) {
       )}
 
       {tab === 'check' &&
-        station.checklist.map((block) => (
+        activeChecklist.map((block) => (
           <div key={block.block}>
             <h2 className="mt-4 mb-2 text-sm font-semibold text-on-surface-variant">{block.block}</h2>
             {block.items.map((item) => {
-              const key = `${block.block}::${item}`;
+              const key = `${activeScenario?.name ?? 'default'}::${block.block}::${item}`;
               return (
                 <label key={key} className="flex items-start gap-2.5 border-b border-outline-variant py-3 last:border-none">
                   <input
@@ -102,9 +144,10 @@ export function StationDetailScreen({ stationId, onBack }: Props) {
           </div>
         ))}
 
-      {tab === 'order' && (
+      {tab === 'order' && orderingStation && (
         <StepOrderingGame
-          station={station}
+          key={orderingStation.id}
+          station={orderingStation}
           onFinish={(score) => saveProgress({ stationId, checklistDone, orderingBestScore: score, lastPracticedAt: Date.now() })}
         />
       )}

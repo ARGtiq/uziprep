@@ -41,28 +41,31 @@ OpenRouter: https://openrouter.ai/keys
 IndexedDB. Supabase нужен только для входа по email и синхронизации
 между устройствами.
 
-**Настройка (один раз):**
+**Настройка проекта (один раз, в Supabase Dashboard):**
 
 1. Создай проект на [supabase.com](https://supabase.com) (бесплатный план достаточен)
 2. Project Settings → API — скопируй `Project URL` и `anon public` ключ
 3. SQL Editor → New query — вставь и выполни содержимое `supabase/schema.sql`
-   (создаёт таблицу `progress` с RLS: каждый видит только свои строки)
+   (создаёт таблицы `progress` и `exam_attempts` с RLS: каждый видит и меняет только свои строки)
 4. Authentication → Providers → Email — включи "Enable email provider"
-   и отключи "Confirm email" если хочешь, чтобы magic link работал
-   без лишнего шага (по умолчанию Supabase и так шлёт magic link, а не пароль)
 5. Authentication → URL Configuration → Redirect URLs — добавь адрес
-   своего сайта на GitHub Pages (`https://логин.github.io/uziprep/`),
-   иначе ссылка из письма будет вести не туда
+   своего сайта (`https://логин.github.io/uziprep/`), иначе ссылка из
+   письма будет вести не туда
 
-**Локально:** скопируй `.env.example` в `.env`, впиши `VITE_SUPABASE_URL`
-и `VITE_SUPABASE_ANON_KEY`. `.env` не заливается на GitHub (в `.gitignore`).
+**Подключение из самого приложения (проще всего):** открой сайт →
+Профиль → в блоке "Supabase не настроен" вставь `Project URL` и
+`anon key`, нажми "Сохранить и подключить". Ключ хранится в
+localStorage браузера — это нормально для anon-ключа, доступ к данным
+ограничивает RLS на сервере, а не секретность ключа. Работает сразу,
+без пересборки и без GitHub Secrets.
 
-**На GitHub Pages:** значения нужно добавить как секреты репозитория —
-Settings → Secrets and variables → Actions → New repository secret,
-завести `VITE_SUPABASE_URL` и `VITE_SUPABASE_ANON_KEY`. Workflow
-(`.github/workflows/deploy.yml`) сам подставит их при сборке. Без
-этого шага сайт продолжит работать, просто в локальном режиме —
-`ProfileScreen` покажет "Supabase не настроен".
+**Альтернатива через переменные окружения** (если не хочешь держать
+ключ в localStorage, или настраиваешь при сборке): скопируй
+`.env.example` в `.env` для локальной разработки, либо на GitHub Pages
+добавь `VITE_SUPABASE_URL`/`VITE_SUPABASE_ANON_KEY` как секреты
+репозитория (Settings → Secrets and variables → Actions) — workflow их
+подставит при сборке. Настройки из приложения (localStorage) имеют
+приоритет над этими переменными, если заданы оба варианта.
 
 ## Запуск
 
@@ -108,10 +111,15 @@ npm run preview
 
 ## Данные станций
 
-`src/data/stations.ts` — структурированные данные, вытащенные из
-паспортов ОСКЭ (`13. Алгоритм выполнения навыка` → `steps`,
-`14. Оценочный лист` → `checklist`). При добавлении новых паспортов
-— просто новый объект `Station` в массив `STATIONS`.
+`src/data/stations.ts` — сгенерирован из официальных паспортов станций
+(раздел 13 «Алгоритм выполнения навыка» → `steps`/`scenarios[].steps`,
+раздел 14 «Оценочный лист» → `checklist`/`scenarios[].checklist`),
+текст дословный. Станции с несколькими сценариями (например, УЗИ ОБП:
+печень / поджелудочная / правая почка / левая почка — конкретный орган
+определяет АПК в день экзамена) хранят их в поле `scenarios`; на
+детальной странице появляется переключатель сценария. При добавлении
+новых паспортов проще всего прислать файл — сценарии/чек-лист можно
+вытащить скриптом по тому же шаблону таблиц, а не переносить вручную.
 
 ## Офлайн-хранилище
 
