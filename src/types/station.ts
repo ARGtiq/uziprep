@@ -30,4 +30,5 @@ export interface StationProgress {
   checklistDone: Record<string, boolean>; // key = `${block}::${item}`
   orderingBestScore?: number; // 0..1, лучший результат drag-n-drop попытки
   lastPracticedAt?: number;
+  updatedAt: number; // timestamp последнего изменения — для разрешения конфликтов sync (last-write-wins)
 }

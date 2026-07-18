@@ -4,7 +4,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 import path from 'path';
 
 export default defineConfig({
-  base: '/uziprep/',
+  base: '/uziprep/', // подставь реальное имя репозитория; для username.github.io (корневой репо) — base не нужен, или '/'
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
