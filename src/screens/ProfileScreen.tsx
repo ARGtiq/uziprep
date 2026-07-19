@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { OfflineReadyIndicator } from '@/components/OfflineReadyIndicator';
+import { forceHardUpdate } from '@/lib/forceUpdate';
 import { APP_VERSION } from '@/version';
 import { useTheme } from '@/theme/ThemeProvider';
 import { useAuth } from '@/lib/useAuth';
@@ -443,6 +444,12 @@ export function ProfileScreen() {
 
       <OfflineReadyIndicator />
       <p className="mt-2 text-center text-xs text-on-surface-variant">UziPrep v{APP_VERSION}</p>
+      <button
+        onClick={() => forceHardUpdate()}
+        className="mx-auto mt-2 block text-center text-xs text-on-surface-variant underline"
+      >
+        Версия старая / что-то не так — принудительно обновить
+      </button>
     </div>
   );
 }
