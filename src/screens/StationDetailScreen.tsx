@@ -2,9 +2,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { getStationById } from '@/data/stations';
 import { getProgress, saveProgress } from '@/lib/db';
 import { StepOrderingGame } from '@/components/StepOrderingGame';
+import { ScenarioComparisonView } from '@/components/ScenarioComparisonView';
 import { Icon } from '@/components/Icon';
 
-type Tab = 'algo' | 'check' | 'order';
+type Tab = 'algo' | 'check' | 'order' | 'compare';
 
 interface Props {
   stationId: string;
@@ -20,6 +21,7 @@ export function StationDetailScreen({ stationId, onBack }: Props) {
   useEffect(() => {
     getProgress(stationId).then((p) => setChecklistDone(p.checklistDone));
     setScenarioIndex(0);
+    setTab('algo');
   }, [stationId]);
 
   // Многие станции ОСКЭ разыгрывают один из нескольких сценариев
@@ -88,17 +90,20 @@ export function StationDetailScreen({ stationId, onBack }: Props) {
         </div>
       )}
 
-      <div className="mb-4 flex gap-4 border-b border-outline-variant">
-        {([
-          ['algo', 'Полный план'],
-          ['order', 'Тренировка порядка'],
-          ['check', 'Чек-лист'],
-        ] as [Tab, string][]).map(([key, label]) => (
+      <div className="mb-4 flex gap-4 overflow-x-auto border-b border-outline-variant">
+        {(
+          [
+            ['algo', 'Полный план'],
+            ['order', 'Тренировка порядка'],
+            ['check', 'Чек-лист'],
+            ...(hasMultipleScenarios ? ([['compare', 'Сравнение']] as [Tab, string][]) : []),
+          ] as [Tab, string][]
+        ).map(([key, label]) => (
           <button
             key={key}
             onClick={() => setTab(key)}
             className={[
-              'border-b-2 pb-2.5 text-sm font-medium',
+              'shrink-0 border-b-2 pb-2.5 text-sm font-medium',
               tab === key ? 'border-primary text-primary font-semibold' : 'border-transparent text-on-surface-variant',
             ].join(' ')}
           >
@@ -151,6 +156,8 @@ export function StationDetailScreen({ stationId, onBack }: Props) {
           onFinish={(score) => saveProgress({ stationId, checklistDone, orderingBestScore: score, lastPracticedAt: Date.now() })}
         />
       )}
+
+      {tab === 'compare' && hasMultipleScenarios && <ScenarioComparisonView scenarios={scenarios!} />}
     </div>
   );
 }

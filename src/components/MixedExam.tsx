@@ -4,6 +4,7 @@ import type { QuizQuestion, Station } from '@/types/station';
 import { StepOrderingGame } from '@/components/StepOrderingGame';
 import { Icon } from '@/components/Icon';
 import { saveExamAttempt } from '@/lib/db';
+import { getExamOrderingSteps } from '@/lib/scenarioComparison';
 
 type ExamItem =
   | { kind: 'mcq'; question: QuizQuestion }
@@ -23,10 +24,25 @@ function shuffle<T>(arr: T[]): T[] {
  * Пропорция ~70/30 — ordering-заданий меньше, они дольше проходятся.
  * Если реальных вопросов/станций меньше запрошенного — берём сколько
  * есть, без дублирования одного и того же задания.
+ *
+ * Для ordering-пула берём не полный station.steps (у части станций
+ * это 30–90 дословных пунктов — в 5-минутном формате одно такое
+ * задание съело бы весь лимит времени), а getExamOrderingSteps():
+ * для станций с несколькими сценариями — общее для всех сценариев
+ * ядро (короче и всё ещё осмысленно самостоятельно), для остальных —
+ * полный список, если он и так короткий. Станции, которым это не
+ * помогает уложиться в порог, в экзамен просто не попадают — полная
+ * версия остаётся в бесштрафном режиме "Тренировка без таймера".
  */
 function buildExamPool(count: number): ExamItem[] {
   const mcqPool: ExamItem[] = shuffle(STATIONS.flatMap((s) => s.quiz ?? [])).map((q) => ({ kind: 'mcq', question: q }));
-  const orderingPool: ExamItem[] = shuffle(STATIONS.filter((s) => s.steps.length >= 3)).map((s) => ({ kind: 'ordering', station: s }));
+
+  const orderingCandidates = STATIONS.map((s) => {
+    const steps = getExamOrderingSteps(s);
+    return steps ? { ...s, steps } : null;
+  }).filter((s): s is Station => s !== null);
+
+  const orderingPool: ExamItem[] = shuffle(orderingCandidates).map((s) => ({ kind: 'ordering', station: s }));
 
   const orderingCount = Math.min(orderingPool.length, Math.round(count * 0.3));
   const mcqCount = Math.min(mcqPool.length, count - orderingCount);
