@@ -1,24 +1,35 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { askAiTutorOnce } from '@/lib/aiClient';
 import { isAiConfigured } from '@/lib/aiSettings';
+import { db } from '@/lib/db';
+import { bumpLocalUpdatedAt } from '@/lib/localState';
 import { Icon } from '@/components/Icon';
 
 interface Props {
+  stationId: string;
+  stationTitle: string;
   blockName: string;
   itemTexts: string[];
 }
 
 /**
- * Просит AI придумать короткую мнемонику/акроним из первых
- * букв/смысловых опор шагов блока. Результат не сохраняется — это
- * разовая подсказка, при повторном нажатии можно попросить другой
- * вариант (модель не детерминирована).
+ * Просит AI придумать короткую мнемонику/акроним для блока и
+ * сохраняет результат в Dexie (по ключу станция+блок) — при
+ * следующем заходе показывается сохранённая, а не теряется.
+ * "Другой вариант" перезаписывает сохранённое новой генерацией.
+ * Все сохранённые мнемоники доступны разом на отдельном экране
+ * (см. screens/MnemonicsScreen.tsx).
  */
-export function MnemonicButton({ blockName, itemTexts }: Props) {
+export function MnemonicButton({ stationId, stationTitle, blockName, itemTexts }: Props) {
+  const key = `${stationId}::${blockName}`;
   const [mnemonic, setMnemonic] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const configured = isAiConfigured();
+
+  useEffect(() => {
+    db.mnemonics.get(key).then((saved) => setMnemonic(saved?.text ?? null));
+  }, [key]);
 
   async function generate() {
     setLoading(true);
@@ -31,6 +42,8 @@ export function MnemonicButton({ blockName, itemTexts }: Props) {
         itemTexts.map((t, i) => `${i + 1}. ${t}`).join('\n');
       const reply = await askAiTutorOnce(prompt);
       setMnemonic(reply);
+      await db.mnemonics.put({ key, stationId, stationTitle, blockName, text: reply, updatedAt: Date.now() });
+      bumpLocalUpdatedAt();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Не удалось сгенерировать');
     } finally {

@@ -36,6 +36,15 @@ export interface QuestionStat {
   lastSeenAt: number;
 }
 
+export interface SavedMnemonic {
+  key: string; // `${stationId}::${scenarioName}::${blockName}`
+  stationId: string;
+  stationTitle: string;
+  blockName: string;
+  text: string;
+  updatedAt: number;
+}
+
 export class UziPrepDB extends Dexie {
   progress!: Table<StationProgress, string>;
   syncQueue!: Table<SyncQueueItem, number>;
@@ -43,6 +52,7 @@ export class UziPrepDB extends Dexie {
   examAttempts!: Table<ExamAttempt, number>;
   blockMastery!: Table<BlockMastery, string>;
   questionStats!: Table<QuestionStat, string>;
+  mnemonics!: Table<SavedMnemonic, string>;
 
   constructor() {
     super('uziprep');
@@ -70,6 +80,15 @@ export class UziPrepDB extends Dexie {
       examAttempts: '++id, synced, finishedAt',
       blockMastery: 'key, stationId, dueAt, level',
       questionStats: 'questionId, wrongCount',
+    });
+    this.version(5).stores({
+      progress: 'stationId',
+      syncQueue: '++id, synced',
+      chatMessages: '++id, threadKey, createdAt',
+      examAttempts: '++id, synced, finishedAt',
+      blockMastery: 'key, stationId, dueAt, level',
+      questionStats: 'questionId, wrongCount',
+      mnemonics: 'key, stationId',
     });
   }
 }

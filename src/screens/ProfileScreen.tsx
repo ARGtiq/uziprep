@@ -15,7 +15,10 @@ import {
 } from '@/lib/aiSettings';
 
 import { extractDominantColorHex } from '@/theme/sources/imageSource';
-import { getSupabaseSettings, saveSupabaseSettings, clearSupabaseSettings } from '@/lib/supabase';
+import { getSupabaseSettings, saveSupabaseSettings, clearSupabaseSettings, getSupabase } from '@/lib/supabase';
+import { DiagnosticsButton } from '@/components/DiagnosticsButton';
+import { askAiTutorOnce } from '@/lib/aiClient';
+import { exportBackup, downloadBackup, importBackup, type BackupData } from '@/lib/backup';
 
 export function ProfileScreen() {
   const { preference, setPreference, seedHex, setSeedHex, sourceKey, setSourceKey, colorfulIcons, setColorfulIcons } = useTheme();
@@ -33,6 +36,27 @@ export function ProfileScreen() {
   const [googleModel, setGoogleModel] = useState<string>(GOOGLE_MODELS[0].id);
   const [aiSaved, setAiSaved] = useState(false);
   const [extractingColor, setExtractingColor] = useState(false);
+  const [backupMessage, setBackupMessage] = useState<string | null>(null);
+
+  async function handleExportBackup() {
+    const data = await exportBackup();
+    downloadBackup(data);
+  }
+
+  async function handleImportBackup(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text) as BackupData;
+      if (!confirm('Импорт заменит весь текущий прогресс на этом устройстве данными из файла. Продолжить?')) return;
+      await importBackup(data);
+      setBackupMessage('Прогресс восстановлен. Перезагрузи страницу, чтобы всё обновилось.');
+    } catch {
+      setBackupMessage('Не удалось прочитать файл — убедись, что это бэкап, экспортированный отсюда же.');
+    }
+  }
   const [notifEnabled, setNotifEnabled] = useState(
     () => typeof Notification !== 'undefined' && Notification.permission === 'granted',
   );
@@ -170,11 +194,22 @@ export function ProfileScreen() {
       )}
 
       {configured && (
-        <div className="mb-4 flex items-center justify-between rounded-m3-md bg-surface-container-low p-3.5 text-xs text-on-surface-variant">
-          <span>Supabase подключён: {getSupabaseSettings().url}</span>
-          <button onClick={handleClearSupabase} className="text-error underline">
-            Отключить
-          </button>
+        <div className="mb-4 rounded-m3-md bg-surface-container-low p-3.5 text-xs text-on-surface-variant">
+          <div className="flex items-center justify-between">
+            <span>Supabase подключён: {getSupabaseSettings().url}</span>
+            <button onClick={handleClearSupabase} className="text-error underline">
+              Отключить
+            </button>
+          </div>
+          <DiagnosticsButton
+            label="Проверить подключение"
+            check={async () => {
+              const supabase = getSupabase();
+              if (!supabase) throw new Error('Клиент не создан');
+              const { error } = await supabase.from('progress').select('station_id').limit(1);
+              if (error) throw new Error(error.message);
+            }}
+          />
         </div>
       )}
 
@@ -440,7 +475,32 @@ export function ProfileScreen() {
         <button type="submit" className="w-full rounded-full bg-primary py-2.5 text-sm font-semibold text-on-primary">
           {aiSaved ? 'Сохранено ✓' : 'Сохранить настройки AI'}
         </button>
+        <DiagnosticsButton
+          label="Диагностика подключения"
+          check={async () => {
+            const reply = await askAiTutorOnce('Ответь строго одним словом: тест');
+            if (!reply || reply.length === 0) throw new Error('Пустой ответ от модели');
+          }}
+        />
       </form>
+
+      <h2 className="mb-2 text-sm font-semibold text-on-surface-variant">Бэкап прогресса</h2>
+      <div className="mb-4 rounded-m3-md bg-surface-container-low p-3.5">
+        <p className="mb-3 text-xs text-on-surface-variant">
+          Полный экспорт всего локального прогресса (чек-листы, попытки экзамена, мастерство блоков, мнемоники,
+          рекорды) в файл — можно перенести на другое устройство вручную или сохранить на всякий случай, даже без Supabase.
+        </p>
+        <div className="flex gap-2">
+          <button onClick={handleExportBackup} className="flex-1 rounded-full bg-primary py-2.5 text-sm font-semibold text-on-primary">
+            Экспорт
+          </button>
+          <label className="flex flex-1 cursor-pointer items-center justify-center rounded-full border border-outline-variant py-2.5 text-sm font-semibold">
+            Импорт
+            <input type="file" accept="application/json" className="hidden" onChange={handleImportBackup} />
+          </label>
+        </div>
+        {backupMessage && <p className="mt-2 text-xs text-on-surface-variant">{backupMessage}</p>}
+      </div>
 
       <OfflineReadyIndicator />
       <p className="mt-2 text-center text-xs text-on-surface-variant">UziPrep v{APP_VERSION}</p>

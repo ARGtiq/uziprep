@@ -3,6 +3,8 @@ import { NavBar, type Tab } from '@/components/NavBar';
 import { StationsScreen } from '@/screens/StationsScreen';
 import { StationDetailScreen } from '@/screens/StationDetailScreen';
 import { WeakSpotsScreen } from '@/screens/WeakSpotsScreen';
+import { MnemonicsScreen } from '@/screens/MnemonicsScreen';
+import { StatsDashboardScreen } from '@/screens/StatsDashboardScreen';
 import { ExamScreen } from '@/screens/ExamScreen';
 import { AiTutorScreen } from '@/screens/AiTutorScreen';
 import { ProfileScreen } from '@/screens/ProfileScreen';
@@ -17,7 +19,12 @@ import { DailyWarmupModal } from '@/components/DailyWarmupModal';
 import { ChangelogModal, shouldShowChangelog, markChangelogSeen } from '@/components/ChangelogModal';
 import { UpdateBanner } from '@/components/UpdateBanner';
 
-type StationsView = { mode: 'list' } | { mode: 'detail'; stationId: string } | { mode: 'weakspots' };
+type StationsView =
+  | { mode: 'list' }
+  | { mode: 'detail'; stationId: string }
+  | { mode: 'weakspots' }
+  | { mode: 'mnemonics' }
+  | { mode: 'stats' };
 
 export default function App() {
   const [tab, setTab] = useState<Tab>('stations');
@@ -86,11 +93,19 @@ export default function App() {
         {tab === 'stations' && stationsView.mode === 'weakspots' && (
           <WeakSpotsScreen onOpenStation={openStation} />
         )}
+        {tab === 'stations' && stationsView.mode === 'mnemonics' && (
+          <MnemonicsScreen onBack={() => setStationsView({ mode: 'list' })} onOpenStation={openStation} />
+        )}
+        {tab === 'stations' && stationsView.mode === 'stats' && (
+          <StatsDashboardScreen onBack={() => setStationsView({ mode: 'list' })} />
+        )}
         {tab === 'stations' && stationsView.mode === 'list' && (
           <StationsScreen
             onOpenStation={openStation}
             onGoExam={() => changeTab('exam')}
             onOpenWeakSpots={() => setStationsView({ mode: 'weakspots' })}
+            onOpenMnemonics={() => setStationsView({ mode: 'mnemonics' })}
+            onOpenStats={() => setStationsView({ mode: 'stats' })}
           />
         )}
         {tab === 'exam' && <ExamScreen />}

@@ -134,7 +134,7 @@ export function StationDetailScreen({ stationId, onBack }: Props) {
             <div key={block.block} className="mb-4">
               <div className="mb-1.5 flex items-center justify-between">
                 <h2 className="text-sm font-semibold text-on-surface-variant">{block.block}</h2>
-                <MnemonicButton blockName={block.block} itemTexts={block.items.map((i) => i.text)} />
+                <MnemonicButton stationId={stationId} stationTitle={station.title} blockName={block.block} itemTexts={block.items.map((i) => i.text)} />
               </div>
               {block.items.map((step) => (
                 <div key={step.num} className="flex gap-3 border-b border-outline-variant py-3 last:border-none">

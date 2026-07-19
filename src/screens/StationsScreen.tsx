@@ -14,9 +14,11 @@ interface Props {
   onOpenStation: (id: string) => void;
   onGoExam: () => void;
   onOpenWeakSpots: () => void;
+  onOpenMnemonics: () => void;
+  onOpenStats: () => void;
 }
 
-export function StationsScreen({ onOpenStation, onGoExam, onOpenWeakSpots }: Props) {
+export function StationsScreen({ onOpenStation, onGoExam, onOpenWeakSpots, onOpenMnemonics, onOpenStats }: Props) {
   const streak = getStreak();
   const [filter, setFilter] = useState<(typeof CATS)[number]>('Все');
   const list = STATIONS.filter((s) => filter === 'Все' || s.category === filter);
@@ -66,7 +68,10 @@ export function StationsScreen({ onOpenStation, onGoExam, onOpenWeakSpots }: Pro
 
       <TodayReviewWidget onOpen={onOpenWeakSpots} />
 
-      <div className="mb-3 flex items-center gap-3 rounded-m3-md bg-surface-container-low p-3.5">
+      <button
+        onClick={onOpenStats}
+        className="mb-3 flex w-full items-center gap-3 rounded-m3-md bg-surface-container-low p-3.5 text-left"
+      >
         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary-container text-on-primary-container">
           <Icon name="workspace_premium" size={20} />
         </div>
@@ -77,8 +82,15 @@ export function StationsScreen({ onOpenStation, onGoExam, onOpenWeakSpots }: Pro
             {streak.count > 0 && <> · 🔥 {streak.count} {streak.count === 1 ? 'день' : 'дня'} подряд</>}
           </div>
         </div>
-        <button onClick={onOpenWeakSpots} className="flex shrink-0 items-center gap-1 text-xs font-semibold text-on-surface-variant">
-          Слабые места <Icon name="arrow_forward" size={14} />
+        <Icon name="arrow_forward" size={16} className="shrink-0 text-on-surface-variant" />
+      </button>
+
+      <div className="mb-3 flex gap-2">
+        <button onClick={onOpenWeakSpots} className="flex flex-1 items-center justify-center gap-1 rounded-full border border-outline-variant py-2 text-xs font-semibold text-on-surface-variant">
+          Слабые места
+        </button>
+        <button onClick={onOpenMnemonics} className="flex flex-1 items-center justify-center gap-1 rounded-full border border-outline-variant py-2 text-xs font-semibold text-on-surface-variant">
+          Мои мнемоники
         </button>
       </div>
 
