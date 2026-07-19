@@ -5,6 +5,7 @@ import { addXp } from '@/lib/streakAndXp';
 import { StepOrderingGame } from '@/components/StepOrderingGame';
 import { ScenarioComparisonView } from '@/components/ScenarioComparisonView';
 import { BlockAccordionTrainer } from '@/components/BlockAccordionTrainer';
+import { ZeroMistakeChallenge } from '@/components/ZeroMistakeChallenge';
 import { CoreThenDiffTrainer } from '@/components/CoreThenDiffTrainer';
 import { FindTheErrorTrainer } from '@/components/FindTheErrorTrainer';
 import { OcclusionTrainer } from '@/components/OcclusionTrainer';
@@ -14,7 +15,7 @@ import { Confetti } from '@/components/Confetti';
 import { Icon } from '@/components/Icon';
 
 type Tab = 'algo' | 'check' | 'order' | 'compare';
-type OrderMode = 'blocks' | 'core-diff' | 'find-error' | 'occlusion' | 'voice' | 'full';
+type OrderMode = 'blocks' | 'core-diff' | 'find-error' | 'occlusion' | 'voice' | 'full' | 'challenge';
 
 interface Props {
   stationId: string;
@@ -179,6 +180,7 @@ export function StationDetailScreen({ stationId, onBack }: Props) {
                 ['find-error', 'Найди ошибку'],
                 ['occlusion', 'Скрой и вспомни'],
                 ['voice', 'Расскажи вслух'],
+                ['challenge', 'Без права на ошибку'],
                 ['full', 'Всё целиком'],
               ] as [OrderMode, string][]
             ).map(([key, label]) => (
@@ -211,11 +213,15 @@ export function StationDetailScreen({ stationId, onBack }: Props) {
           {orderMode === 'voice' && (
             <VoiceRecallTrainer scenarioName={activeScenario?.name ?? station.title} steps={flatStepItems} />
           )}
+          {orderMode === 'challenge' && activeStepBlocks.length > 0 && (
+            <ZeroMistakeChallenge key={activeScenario?.name} stationId={stationId} scenarioName={activeScenario?.name ?? 'default'} blocks={activeStepBlocks} />
+          )}
           {orderMode === 'full' && (
             <StepOrderingGame
               key={`${stationId}::${scenarioIndex}::full`}
               station={{ ...station, id: `${station.id}::${scenarioIndex}`, steps: activeSteps }}
               onFinish={(score) => saveProgress({ stationId, checklistDone, orderingBestScore: score, lastPracticedAt: Date.now() })}
+              timeKey={`${stationId}::${activeScenario?.name ?? 'default'}::full`}
             />
           )}
         </div>

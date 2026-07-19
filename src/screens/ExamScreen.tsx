@@ -3,10 +3,11 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { STATIONS } from '@/data/stations';
 import { StepOrderingGame } from '@/components/StepOrderingGame';
 import { MixedExam } from '@/components/MixedExam';
+import { ExamFeverMode } from '@/components/ExamFeverMode';
 import { Icon } from '@/components/Icon';
 import { listExamAttempts } from '@/lib/db';
 
-type ExamMode = 'menu' | 'ordering-pick' | 'ordering-play' | 'mixed';
+type ExamMode = 'menu' | 'ordering-pick' | 'ordering-play' | 'mixed' | 'fever';
 
 const FORMATS = [
   { count: 10, seconds: 5 * 60, label: 'Быстрая проверка', sub: '~10 заданий · 5 минут' },
@@ -27,6 +28,10 @@ export function ExamScreen() {
 
   if (mode === 'mixed') {
     return <MixedExam questionCount={format.count} secondsPerRun={format.seconds} onExit={() => setMode('menu')} />;
+  }
+
+  if (mode === 'fever') {
+    return <ExamFeverMode onExit={() => setMode('menu')} />;
   }
 
   if (mode === 'ordering-pick') {
@@ -113,7 +118,7 @@ export function ExamScreen() {
 
       <button
         onClick={() => setMode('ordering-pick')}
-        className="flex w-full items-center gap-3 rounded-m3-md bg-secondary-container p-3.5 text-left"
+        className="mb-2.5 flex w-full items-center gap-3 rounded-m3-md bg-secondary-container p-3.5 text-left"
       >
         <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-m3-md bg-primary-container text-on-primary-container">
           <Icon name="drag_indicator" size={22} />
@@ -121,6 +126,20 @@ export function ExamScreen() {
         <div>
           <b className="text-sm text-on-secondary-container">Тренировка порядка без таймера</b>
           <div className="text-xs text-on-surface-variant">Отдельно потренироваться на одной станции</div>
+        </div>
+      </button>
+
+      <button
+        onClick={() => setMode('fever')}
+        disabled={availableQuestions === 0}
+        className="flex w-full items-center gap-3 rounded-m3-md bg-error/10 p-3.5 text-left disabled:opacity-40"
+      >
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-m3-md bg-error/20 text-error">
+          <Icon name="emergency" size={22} />
+        </span>
+        <div>
+          <b className="text-sm text-error">Экзаменационная лихорадка</b>
+          <div className="text-xs text-on-surface-variant">Серия вопросов с убывающим временем на ответ — до первой ошибки</div>
         </div>
       </button>
 

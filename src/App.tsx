@@ -12,6 +12,8 @@ import { useOnlineStatus } from '@/lib/useOnlineStatus';
 import { pushLocalChanges } from '@/lib/sync';
 import { getStationById } from '@/data/stations';
 import { touchStreak } from '@/lib/streakAndXp';
+import { shouldShowWarmup } from '@/lib/dailyWarmup';
+import { DailyWarmupModal } from '@/components/DailyWarmupModal';
 
 type StationsView = { mode: 'list' } | { mode: 'detail'; stationId: string } | { mode: 'weakspots' };
 
@@ -24,9 +26,11 @@ export default function App() {
   const [lastStationId, setLastStationId] = useState<string | null>(null);
   const { session } = useAuth();
   const online = useOnlineStatus();
+  const [showWarmup, setShowWarmup] = useState(false);
 
   useEffect(() => {
     touchStreak();
+    if (shouldShowWarmup()) setShowWarmup(true);
   }, []);
 
   useEffect(() => {
@@ -56,6 +60,7 @@ export default function App() {
   return (
     <div className="mx-auto flex min-h-screen max-w-[1100px]">
       <OfflineBanner />
+      {showWarmup && <DailyWarmupModal onClose={() => setShowWarmup(false)} />}
       <NavBar active={tab} onChange={changeTab} variant="rail" />
       <main className="min-w-0 flex-1 p-4 pb-24 md:p-6">
         {tab === 'stations' && stationsView.mode === 'detail' && (

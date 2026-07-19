@@ -1,6 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { Station } from '@/types/station';
 import { Icon } from '@/components/Icon';
+import { recordAttemptTime, getBestTime, formatMs, type RecordResult } from '@/lib/bestTimes';
 
 interface CardItem {
   key: string;
@@ -21,6 +22,8 @@ interface Props {
   station: Station;
   onFinish: (scoreRatio: number) => void;
   allowRetry?: boolean;
+  /** Если задан — включает захват времени и "побей свой рекорд" (только для безошибочных попыток). Не передавай в контексте экзамена. */
+  timeKey?: string;
 }
 
 /**
@@ -33,7 +36,7 @@ interface Props {
  * попытка на вопрос, кнопку "Попробовать ещё раз" прячем, переход к
  * следующему заданию делает родительский компонент (MixedExam).
  */
-export function StepOrderingGame({ station, onFinish, allowRetry = true }: Props) {
+export function StepOrderingGame({ station, onFinish, allowRetry = true, timeKey }: Props) {
   const initial = useMemo<CardItem[]>(
     () => shuffle(station.steps.map((text, i) => ({ key: `${station.id}-${i}`, text, originalIndex: i }))),
     [station.id],
@@ -41,6 +44,13 @@ export function StepOrderingGame({ station, onFinish, allowRetry = true }: Props
   const [cards, setCards] = useState<CardItem[]>(initial);
   const [dragKey, setDragKey] = useState<string | null>(null);
   const [checked, setChecked] = useState(false);
+  const [startedAt] = useState(() => Date.now());
+  const [timeResult, setTimeResult] = useState<RecordResult | null>(null);
+  const [bestSoFar, setBestSoFar] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (timeKey) getBestTime(timeKey).then(setBestSoFar);
+  }, [timeKey]);
 
   function handleDragStart(key: string) {
     setDragKey(key);
@@ -72,7 +82,11 @@ export function StepOrderingGame({ station, onFinish, allowRetry = true }: Props
   function check() {
     setChecked(true);
     const correctCount = cards.filter((c, i) => c.originalIndex === i).length;
-    onFinish(correctCount / cards.length);
+    const ratio = correctCount / cards.length;
+    onFinish(ratio);
+    if (timeKey && ratio === 1) {
+      recordAttemptTime(timeKey, Date.now() - startedAt).then(setTimeResult);
+    }
   }
 
   function reset() {
@@ -82,9 +96,14 @@ export function StepOrderingGame({ station, onFinish, allowRetry = true }: Props
 
   return (
     <div>
-      <p className="text-sm text-on-surface-variant mb-4">
-        Перетащите карточки так, чтобы порядок действий соответствовал правильному алгоритму станции.
-      </p>
+      <div className="mb-4 flex items-start justify-between gap-2">
+        <p className="text-sm text-on-surface-variant">
+          Перетащите карточки так, чтобы порядок действий соответствовал правильному алгоритму станции.
+        </p>
+        {timeKey && bestSoFar !== null && (
+          <span className="shrink-0 whitespace-nowrap text-xs text-on-surface-variant">Рекорд: {formatMs(bestSoFar)}</span>
+        )}
+      </div>
       <div className="flex flex-col gap-2">
         {cards.map((card, i) => {
           const isCorrect = checked && card.originalIndex === i;
@@ -148,6 +167,12 @@ export function StepOrderingGame({ station, onFinish, allowRetry = true }: Props
         <div className="mt-3 text-center text-sm text-on-surface-variant">
           Верно расставлено: {cards.filter((c, i) => c.originalIndex === i).length} из {cards.length}
         </div>
+      )}
+
+      {timeResult && (
+        <p className="mt-1 text-center text-sm font-semibold text-primary">
+          {timeResult.isNewBest ? `Новый личный рекорд: ${formatMs(timeResult.bestMs)}` : `Время: ${formatMs(timeResult.bestMs)}`}
+        </p>
       )}
 
       {checked && cards.some((c, i) => c.originalIndex !== i) && (
