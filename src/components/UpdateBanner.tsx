@@ -10,18 +10,16 @@ import { forceHardUpdate } from '@/lib/forceUpdate';
  * что есть новая, пока сам не перезайдёт. Явно показываем баннер и
  * даём применить обновление одной кнопкой.
  *
- * Штатный updateServiceWorker() иногда не срабатывает надёжно на
- * GitHub Pages (страница остаётся "висеть" — заметили на практике).
- * Поэтому кнопка не просто вызывает штатный API, а следом жёстко
- * подчищает всё через forceHardUpdate() (lib/forceUpdate.ts) —
- * медленнее и грубее "правильного" workbox-флоу, зато гарантированно
- * приводит к свежей версии, а не оставляет пользователя в подвешенном
- * состоянии.
+ * Штатный updateServiceWorker() на практике оказался ненадёжным на
+ * GitHub Pages — кнопка "зависала" бесконечно. Больше не полагаемся
+ * на него вообще: сразу вызываем forceHardUpdate() (lib/forceUpdate.ts),
+ * который сам ограничен по времени на каждом шаге и гарантированно
+ * заканчивается переходом по URL, а не зависанием.
  */
 export function UpdateBanner() {
   const [dismissed, setDismissed] = useState(false);
   const [updating, setUpdating] = useState(false);
-  const { needRefresh, updateServiceWorker } = useRegisterSW({
+  const { needRefresh } = useRegisterSW({
     onRegisteredSW(_url, registration) {
       // Периодически проверяем наличие новой версии, пока вкладка открыта
       if (!registration) return;
@@ -36,20 +34,9 @@ export function UpdateBanner() {
 
   if (!needRefresh || dismissed) return null;
 
-  async function handleUpdate() {
+  function handleUpdate() {
     setUpdating(true);
-    // Даём штатному пути секунду шанс сработать (быстрее и корректнее
-    // сбрасывает состояние приложения), но если он завис — принудительно
-    // добиваем через forceHardUpdate. Обычно один из двух путей приводит
-    // к перезагрузке страницы, после чего этот код уже не выполняется.
-    const timeout = setTimeout(forceHardUpdate, 1500);
-    try {
-      await updateServiceWorker(true);
-      clearTimeout(timeout);
-    } catch {
-      clearTimeout(timeout);
-      forceHardUpdate();
-    }
+    forceHardUpdate();
   }
 
   return (
