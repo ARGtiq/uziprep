@@ -1,7 +1,7 @@
 import {
   LayoutGrid, Timer, Sparkles, CircleUserRound, Clock, ArrowLeft, ArrowRight,
   CheckCircle2, XCircle, GripVertical, X, Award, RotateCcw, ChevronUp, ChevronDown,
-  HeartPulse, Heart, MessageSquare, Siren, Waves, Stethoscope, ArrowLeftRight,
+  HeartPulse, Heart, MessageSquare, Siren, Waves, ArrowLeftRight,
   type LucideProps,
 } from 'lucide-react';
 
@@ -35,7 +35,6 @@ const REGISTRY = {
   forum: MessageSquare,
   emergency: Siren,
   waves: Waves,
-  stethoscope: Stethoscope,
   compare: ArrowLeftRight,
 } as const;
 

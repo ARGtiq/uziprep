@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { STATIONS } from '@/data/stations';
 import type { QuizQuestion } from '@/types/station';
 import { Icon } from '@/components/Icon';
-import { recordQuestionResult } from '@/lib/db';
+import { recordQuestionResult } from '@/lib/questionStats';
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];

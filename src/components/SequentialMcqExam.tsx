@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { STATIONS } from '@/data/stations';
 import type { QuizQuestion } from '@/types/station';
-import { recordQuestionResult, getWrongQuestionIds } from '@/lib/db';
+import { getWrongQuestionIds, recordQuestionResult } from '@/lib/questionStats';
 import { Icon } from '@/components/Icon';
 
 function shuffle<T>(arr: T[]): T[] {

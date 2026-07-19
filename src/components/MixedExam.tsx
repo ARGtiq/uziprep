@@ -3,7 +3,8 @@ import { STATIONS } from '@/data/stations';
 import type { QuizQuestion, Station } from '@/types/station';
 import { StepOrderingGame } from '@/components/StepOrderingGame';
 import { Icon } from '@/components/Icon';
-import { saveExamAttempt, recordQuestionResult } from '@/lib/db';
+import { saveExamAttempt } from '@/lib/db';
+import { recordQuestionResult } from '@/lib/questionStats';
 import { getExamOrderingSteps } from '@/lib/scenarioComparison';
 
 type ExamItem =

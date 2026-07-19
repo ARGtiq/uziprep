@@ -76,22 +76,7 @@ export class UziPrepDB extends Dexie {
 
 export const db = new UziPrepDB();
 
-export async function recordQuestionResult(questionId: string, correct: boolean) {
-  const existing = await db.questionStats.get(questionId);
-  const next: QuestionStat = {
-    questionId,
-    correctCount: (existing?.correctCount ?? 0) + (correct ? 1 : 0),
-    wrongCount: (existing?.wrongCount ?? 0) + (correct ? 0 : 1),
-    lastResult: correct ? 'correct' : 'wrong',
-    lastSeenAt: Date.now(),
-  };
-  await db.questionStats.put(next);
-}
 
-export async function getWrongQuestionIds(): Promise<Set<string>> {
-  const all = await db.questionStats.where('wrongCount').above(0).toArray();
-  return new Set(all.map((s) => s.questionId));
-}
 
 /**
  * Сохраняет прогресс локально всегда (офлайн-первый подход) и кладёт
