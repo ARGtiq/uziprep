@@ -1,7 +1,7 @@
 import {
   LayoutGrid, Timer, Sparkles, CircleUserRound, Clock, ArrowLeft, ArrowRight,
   CheckCircle2, XCircle, GripVertical, X, Award, RotateCcw, ChevronUp, ChevronDown,
-  HeartPulse, Heart, MessageSquare, Siren, Waves, Stethoscope,
+  HeartPulse, Heart, MessageSquare, Siren, Waves, Stethoscope, ArrowLeftRight,
   type LucideProps,
 } from 'lucide-react';
 
@@ -36,6 +36,7 @@ const REGISTRY = {
   emergency: Siren,
   waves: Waves,
   stethoscope: Stethoscope,
+  compare: ArrowLeftRight,
 } as const;
 
 export type IconName = keyof typeof REGISTRY;

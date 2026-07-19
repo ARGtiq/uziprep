@@ -4,6 +4,7 @@ import { streamAiTutor, NetworkError, ApiError, type ChatMessage } from '@/lib/a
 import { getThreadMessages, appendThreadMessage, clearThread } from '@/lib/db';
 import { useOnlineStatus } from '@/lib/useOnlineStatus';
 import { Icon } from '@/components/Icon';
+import { renderSimpleMarkdown } from '@/lib/simpleMarkdown';
 
 const GENERAL_SUGGESTIONS = [
   'Как считать ФВ ЛЖ по Симпсону?',
@@ -123,13 +124,13 @@ export function AiTutorScreen({ stationId, stationTitle }: Props) {
               m.role === 'user' ? 'ml-auto bg-primary-container text-on-primary-container' : 'bg-surface-container-low'
             }`}
           >
-            {m.content}
+            {m.role === 'assistant' ? renderSimpleMarkdown(m.content) : m.content}
           </div>
         ))}
 
         {loading && (
           <div className="mb-2.5 max-w-[85%] rounded-m3-md bg-surface-container-low p-3 text-sm leading-relaxed">
-            {streamingText || 'Печатает...'}
+            {streamingText ? renderSimpleMarkdown(streamingText) : 'Печатает...'}
           </div>
         )}
         {error && <div className="mb-2.5 rounded-m3-md bg-error/10 p-3 text-sm text-error">{error}</div>}

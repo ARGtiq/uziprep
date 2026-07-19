@@ -71,4 +71,63 @@ export async function pullRemoteChanges(userId: string) {
 export async function fullSync(userId: string) {
   await pullRemoteChanges(userId);
   await pushLocalChanges(userId);
+  await pullMiscState(userId);
+  await pushMiscState(userId);
+}
+
+// ==================== misc_state: streak, XP, мастерство, рекорды ====================
+
+interface MiscRemoteRow {
+  streak: unknown;
+  xp: unknown;
+  mastery: unknown[];
+  best_times: unknown[];
+  updated_at: string;
+}
+
+/**
+ * Пуш/пул одним блобом (не построчно, как progress) — эти данные не
+ * требуют реляционных запросов на сервере, только "забрать всё"/
+ * "положить всё". LWW на уровне всего блока: сравниваем updatedAt
+ * локальный (см. lib/localState.ts, bumpLocalUpdatedAt) с серверным.
+ */
+export async function pushMiscState(userId: string) {
+  const supabase = getSupabase();
+  if (!supabase) return;
+  const { hasPendingLocalChanges, exportLocalState, markSyncedNow } = await import('@/lib/localState');
+  if (!hasPendingLocalChanges()) return;
+
+  const state = await exportLocalState();
+  const { error } = await supabase.from('misc_state').upsert(
+    {
+      user_id: userId,
+      streak: state.streak,
+      xp: state.xp,
+      mastery: state.mastery,
+      best_times: state.bestTimes,
+      updated_at: new Date(state.updatedAt).toISOString(),
+    },
+    { onConflict: 'user_id' },
+  );
+  if (!error) markSyncedNow(state.updatedAt);
+}
+
+export async function pullMiscState(userId: string) {
+  const supabase = getSupabase();
+  if (!supabase) return;
+  const { getLocalUpdatedAt, importLocalState, markSyncedNow } = await import('@/lib/localState');
+
+  const { data, error } = await supabase.from('misc_state').select('*').eq('user_id', userId).maybeSingle();
+  if (error || !data) return;
+  const row = data as MiscRemoteRow;
+  const remoteUpdatedAt = new Date(row.updated_at).getTime();
+  if (remoteUpdatedAt > getLocalUpdatedAt()) {
+    await importLocalState({
+      streak: row.streak,
+      xp: row.xp,
+      mastery: row.mastery ?? [],
+      bestTimes: row.best_times ?? [],
+    });
+    markSyncedNow(remoteUpdatedAt);
+  }
 }

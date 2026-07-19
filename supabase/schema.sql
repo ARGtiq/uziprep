@@ -80,3 +80,37 @@ create policy "delete own attempts"
 -- last-write-wins между устройствами. Серверный now() тут был бы
 -- неверным (перезаписывал бы реальное время правки на время получения
 -- запроса сервером, что ломает сравнение при офлайн-правках).
+
+-- ==================== misc_state (streak, XP, мастерство блоков, рекорды времени) ====================
+-- Один JSONB-блоб на пользователя вместо отдельных таблиц под каждый
+-- вид локальных данных — эти данные не требуют реляционных запросов
+-- (никогда не фильтруются на сервере), только "забрать всё"/"положить
+-- всё", так что схема нарочно упрощена.
+
+create table if not exists public.misc_state (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  streak jsonb not null default '{}'::jsonb,
+  xp jsonb not null default '{}'::jsonb,
+  mastery jsonb not null default '[]'::jsonb,
+  best_times jsonb not null default '[]'::jsonb,
+  updated_at timestamptz not null default now()
+);
+
+alter table public.misc_state enable row level security;
+
+drop policy if exists "select own misc_state" on public.misc_state;
+drop policy if exists "insert own misc_state" on public.misc_state;
+drop policy if exists "update own misc_state" on public.misc_state;
+
+create policy "select own misc_state"
+  on public.misc_state for select
+  using (auth.uid() = user_id);
+
+create policy "insert own misc_state"
+  on public.misc_state for insert
+  with check (auth.uid() = user_id);
+
+create policy "update own misc_state"
+  on public.misc_state for update
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);

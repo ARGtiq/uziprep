@@ -9,11 +9,13 @@ import { ProfileScreen } from '@/screens/ProfileScreen';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { useAuth } from '@/lib/useAuth';
 import { useOnlineStatus } from '@/lib/useOnlineStatus';
-import { pushLocalChanges } from '@/lib/sync';
+import { pushLocalChanges, pushMiscState } from '@/lib/sync';
 import { getStationById } from '@/data/stations';
 import { touchStreak } from '@/lib/streakAndXp';
 import { shouldShowWarmup } from '@/lib/dailyWarmup';
 import { DailyWarmupModal } from '@/components/DailyWarmupModal';
+import { ChangelogModal, shouldShowChangelog, markChangelogSeen } from '@/components/ChangelogModal';
+import { UpdateBanner } from '@/components/UpdateBanner';
 
 type StationsView = { mode: 'list' } | { mode: 'detail'; stationId: string } | { mode: 'weakspots' };
 
@@ -27,15 +29,21 @@ export default function App() {
   const { session } = useAuth();
   const online = useOnlineStatus();
   const [showWarmup, setShowWarmup] = useState(false);
+  const [showChangelog, setShowChangelog] = useState(false);
 
   useEffect(() => {
     touchStreak();
     if (shouldShowWarmup()) setShowWarmup(true);
+    if (shouldShowChangelog()) setShowChangelog(true);
+    else if (!localStorage.getItem('uziprep.lastSeenVersion')) markChangelogSeen(); // первая установка — просто запоминаем версию
   }, []);
 
   useEffect(() => {
     if (!session || !online) return;
-    const push = () => pushLocalChanges(session.user.id);
+    const push = () => {
+      pushLocalChanges(session.user.id);
+      pushMiscState(session.user.id);
+    };
     push();
     const interval = setInterval(push, 20000);
     window.addEventListener('online', push);
@@ -60,7 +68,16 @@ export default function App() {
   return (
     <div className="mx-auto flex min-h-screen max-w-[1100px]">
       <OfflineBanner />
-      {showWarmup && <DailyWarmupModal onClose={() => setShowWarmup(false)} />}
+      <UpdateBanner />
+      {showChangelog && (
+        <ChangelogModal
+          onClose={() => {
+            markChangelogSeen();
+            setShowChangelog(false);
+          }}
+        />
+      )}
+      {!showChangelog && showWarmup && <DailyWarmupModal onClose={() => setShowWarmup(false)} />}
       <NavBar active={tab} onChange={changeTab} variant="rail" />
       <main className="min-w-0 flex-1 p-4 pb-24 md:p-6">
         {tab === 'stations' && stationsView.mode === 'detail' && (

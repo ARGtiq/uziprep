@@ -69,7 +69,7 @@ export function OcclusionTrainer({ steps }: Props) {
         <span>
           {index + 1} / {cards.length}
         </span>
-        <span>№{card.num} по паспорту</span>
+        <span>{card.num} по паспорту</span>
       </div>
 
       <div className="mb-4 rounded-m3-md bg-surface-container-low p-4 text-sm leading-relaxed">

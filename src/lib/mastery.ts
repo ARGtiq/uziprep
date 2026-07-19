@@ -1,4 +1,5 @@
 import { db } from '@/lib/db';
+import { bumpLocalUpdatedAt } from '@/lib/localState';
 
 /**
  * Упрощённый SM-2: для каждого блока станции (не отдельного пункта —
@@ -48,6 +49,7 @@ export async function recordBlockResult(
     updatedAt: Date.now(),
   };
   await db.blockMastery.put(next);
+  bumpLocalUpdatedAt();
   return next;
 }
 

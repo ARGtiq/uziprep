@@ -4,7 +4,8 @@ import { STATIONS } from '@/data/stations';
 import type { StationCategory } from '@/types/station';
 import { Icon } from '@/components/Icon';
 import { db } from '@/lib/db';
-import { getStreak, getStationXp, levelForXp } from '@/lib/streakAndXp';
+import { getStreak, getStationXp, levelForXp, getAllXp } from '@/lib/streakAndXp';
+import { TodayReviewWidget } from '@/components/TodayReviewWidget';
 
 const CATS: Array<StationCategory | 'Все'> = ['Все', 'УЗИ', 'Неотложная помощь', 'Общие навыки'];
 
@@ -62,15 +63,20 @@ export function StationsScreen({ onOpenStation, onGoExam, onOpenWeakSpots }: Pro
         </button>
       </div>
 
-      <div className="mb-3 flex items-center justify-between gap-2">
-        {streak.count > 0 ? (
-          <div className="flex items-center gap-1.5 text-sm font-semibold text-primary">
-            🔥 {streak.count} {streak.count === 1 ? 'день' : 'дня'} подряд
+      <TodayReviewWidget onOpen={onOpenWeakSpots} />
+
+      <div className="mb-3 flex items-center gap-3 rounded-m3-md bg-surface-container-low p-3.5">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary-container text-on-primary-container">
+          <Icon name="workspace_premium" size={20} />
+        </div>
+        <div className="flex-1">
+          <b className="text-sm">{levelForXp(Object.values(getAllXp()).reduce((a, b) => a + b, 0)).label}</b>
+          <div className="text-xs text-on-surface-variant">
+            {Object.values(getAllXp()).reduce((a, b) => a + b, 0)} XP
+            {streak.count > 0 && <> · 🔥 {streak.count} {streak.count === 1 ? 'день' : 'дня'} подряд</>}
           </div>
-        ) : (
-          <span />
-        )}
-        <button onClick={onOpenWeakSpots} className="flex items-center gap-1 text-xs font-semibold text-on-surface-variant">
+        </div>
+        <button onClick={onOpenWeakSpots} className="flex shrink-0 items-center gap-1 text-xs font-semibold text-on-surface-variant">
           Слабые места <Icon name="arrow_forward" size={14} />
         </button>
       </div>

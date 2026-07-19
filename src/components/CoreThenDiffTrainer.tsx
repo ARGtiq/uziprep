@@ -68,6 +68,22 @@ export function CoreThenDiffTrainer({ stationId, scenarios }: Props) {
       <p className="mb-3 text-xs text-on-surface-variant">
         Отличия сценария «{sc.name}» от общего ядра ({sc.unique.length} пунктов).
       </p>
+
+      <details className="mb-4 rounded-m3-md bg-surface-container-low">
+        <summary className="cursor-pointer list-none px-3.5 py-3 text-sm font-medium text-on-surface-variant">
+          <span className="mr-1.5 inline-block [details[open]_&]:rotate-90">›</span>
+          Подглядеть общее ядро ({common.length})
+        </summary>
+        <div className="px-3.5 pb-3">
+          {common.map((step) => (
+            <div key={step.num} className="flex gap-2.5 border-t border-outline-variant py-2 first:border-none">
+              <span className="w-6 shrink-0 text-xs text-on-surface-variant">{step.num}</span>
+              <p className="text-sm leading-relaxed">{step.text}</p>
+            </div>
+          ))}
+        </div>
+      </details>
+
       <BlockAccordionTrainer stationId={stationId} scenarioName={sc.name} blocks={[{ block: sc.name, items: sc.unique }]} />
       <button onClick={() => setPhase('pick')} className="mt-4 w-full rounded-full border border-outline-variant py-2.5 text-sm font-semibold">
         ← Другой сценарий

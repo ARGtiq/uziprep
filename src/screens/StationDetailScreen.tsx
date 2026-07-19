@@ -11,6 +11,7 @@ import { FindTheErrorTrainer } from '@/components/FindTheErrorTrainer';
 import { OcclusionTrainer } from '@/components/OcclusionTrainer';
 import { VoiceRecallTrainer } from '@/components/VoiceRecallTrainer';
 import { MnemonicButton } from '@/components/MnemonicButton';
+import { AudioNarration } from '@/components/AudioNarration';
 import { Confetti } from '@/components/Confetti';
 import { Icon } from '@/components/Icon';
 
@@ -128,6 +129,7 @@ export function StationDetailScreen({ stationId, onBack }: Props) {
           <p className="mb-3 text-xs text-on-surface-variant">
             Пошаговый алгоритм дословно по паспорту станции — этот же порядок используется в тренировке.
           </p>
+          <AudioNarration steps={flatStepItems} />
           {activeStepBlocks.map((block) => (
             <div key={block.block} className="mb-4">
               <div className="mb-1.5 flex items-center justify-between">

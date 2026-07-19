@@ -1,3 +1,5 @@
+import { bumpLocalUpdatedAt } from '@/lib/localState';
+
 const LS_STREAK = 'uziprep.streak';
 const LS_XP = 'uziprep.xp'; // { [stationId]: number }
 
@@ -34,6 +36,7 @@ export function touchStreak(): StreakData {
   const nextCount = gap === 1 ? data.count + 1 : 1;
   const next: StreakData = { count: nextCount, lastActiveDay: today };
   localStorage.setItem(LS_STREAK, JSON.stringify(next));
+  bumpLocalUpdatedAt();
   return next;
 }
 
@@ -55,6 +58,7 @@ export function addXp(stationId: string, amount: number) {
   const all = getAllXp();
   all[stationId] = (all[stationId] ?? 0) + amount;
   localStorage.setItem(LS_XP, JSON.stringify(all));
+  bumpLocalUpdatedAt();
 }
 
 export function getAllXp(): Record<string, number> {

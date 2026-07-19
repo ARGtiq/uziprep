@@ -1,4 +1,5 @@
 import Dexie, { type Table } from 'dexie';
+import { bumpLocalUpdatedAt } from '@/lib/localState';
 
 export interface BestTimeRecord {
   key: string; // например `${stationId}::full` или `${stationId}::${scenario}::${block}`
@@ -31,6 +32,7 @@ export async function recordAttemptTime(key: string, elapsedMs: number): Promise
   const isNewBest = previousBestMs === null || elapsedMs < previousBestMs;
   if (isNewBest) {
     await btDb.bestTimes.put({ key, bestMs: elapsedMs, updatedAt: Date.now() });
+    bumpLocalUpdatedAt();
   }
   return { isNewBest, bestMs: isNewBest ? elapsedMs : previousBestMs!, previousBestMs };
 }

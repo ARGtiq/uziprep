@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { OfflineReadyIndicator } from '@/components/OfflineReadyIndicator';
+import { APP_VERSION } from '@/version';
 import { useTheme } from '@/theme/ThemeProvider';
 import { useAuth } from '@/lib/useAuth';
 import { fullSync } from '@/lib/sync';
@@ -15,7 +17,7 @@ import { extractDominantColorHex } from '@/theme/sources/imageSource';
 import { getSupabaseSettings, saveSupabaseSettings, clearSupabaseSettings } from '@/lib/supabase';
 
 export function ProfileScreen() {
-  const { mode, setMode, seedHex, setSeedHex, sourceKey, setSourceKey } = useTheme();
+  const { preference, setPreference, seedHex, setSeedHex, sourceKey, setSourceKey } = useTheme();
   const { session, loading, configured, authError, signInWithEmail, resendMagicLink, signOut } = useAuth();
   const [email, setEmail] = useState('');
   const [sentTo, setSentTo] = useState<string | null>(null);
@@ -30,6 +32,19 @@ export function ProfileScreen() {
   const [googleModel, setGoogleModel] = useState<string>(GOOGLE_MODELS[0].id);
   const [aiSaved, setAiSaved] = useState(false);
   const [extractingColor, setExtractingColor] = useState(false);
+  const [notifEnabled, setNotifEnabled] = useState(
+    () => typeof Notification !== 'undefined' && Notification.permission === 'granted',
+  );
+
+  async function handleToggleNotifications(e: React.ChangeEvent<HTMLInputElement>) {
+    const checked = e.target.checked;
+    if (!checked || typeof Notification === 'undefined') {
+      setNotifEnabled(false);
+      return;
+    }
+    const permission = await Notification.requestPermission();
+    setNotifEnabled(permission === 'granted');
+  }
   const [sbUrl, setSbUrl] = useState('');
   const [sbAnonKey, setSbAnonKey] = useState('');
   const [sbSaved, setSbSaved] = useState(false);
@@ -253,13 +268,24 @@ export function ProfileScreen() {
       <h2 className="mb-2 text-sm font-semibold text-on-surface-variant">Тема</h2>
       <div className="mb-4 rounded-m3-md bg-surface-container-low p-3.5">
         <div className="mb-3 flex items-center justify-between">
-          <span className="text-sm">Тёмная тема</span>
-          <button
-            onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')}
-            className={`h-6 w-11 rounded-full transition-colors ${mode === 'dark' ? 'bg-primary' : 'bg-outline-variant'}`}
-          >
-            <div className={`h-5 w-5 rounded-full bg-surface transition-transform ${mode === 'dark' ? 'translate-x-5' : 'translate-x-0.5'}`} />
-          </button>
+          <span className="text-sm">Режим</span>
+          <div className="flex gap-1 rounded-full bg-surface-container p-0.5">
+            {([
+              ['light', 'Светлая'],
+              ['dark', 'Тёмная'],
+              ['system', 'Системная'],
+            ] as [typeof preference, string][]).map(([p, label]) => (
+              <button
+                key={p}
+                onClick={() => setPreference(p)}
+                className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
+                  preference === p ? 'bg-primary text-on-primary' : 'text-on-surface-variant'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="mb-3 flex items-center justify-between">
@@ -299,6 +325,22 @@ export function ProfileScreen() {
             Работает только внутри нативной Android-обёртки. В браузере — откат на ручной цвет.
           </p>
         )}
+      </div>
+
+      <h2 className="mb-2 text-sm font-semibold text-on-surface-variant">Напоминания</h2>
+      <div className="mb-4 rounded-m3-md bg-surface-container-low p-3.5">
+        <label className="flex items-center justify-between">
+          <div>
+            <span className="text-sm">Напоминать тренироваться</span>
+            <div className="text-xs text-on-surface-variant">Пока только запрос разрешения — само планирование напоминаний добавим позже</div>
+          </div>
+          <input
+            type="checkbox"
+            checked={notifEnabled}
+            onChange={handleToggleNotifications}
+            className="h-5 w-5 shrink-0 accent-[rgb(var(--m3-primary))]"
+          />
+        </label>
       </div>
 
       <h2 className="mb-2 text-sm font-semibold text-on-surface-variant">AI-репетитор</h2>
@@ -385,6 +427,9 @@ export function ProfileScreen() {
           {aiSaved ? 'Сохранено ✓' : 'Сохранить настройки AI'}
         </button>
       </form>
+
+      <OfflineReadyIndicator />
+      <p className="mt-2 text-center text-xs text-on-surface-variant">UziPrep v{APP_VERSION}</p>
     </div>
   );
 }

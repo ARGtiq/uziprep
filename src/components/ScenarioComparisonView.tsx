@@ -47,7 +47,7 @@ export function ScenarioComparisonView({ scenarios }: Props) {
           <div className="mb-5 flex flex-col gap-0.5">
             {stepsCmp.common.map((step) => (
               <div key={step.num} className="flex gap-2.5 border-b border-outline-variant py-2.5 last:border-none">
-                <span className="w-6 shrink-0 text-xs text-on-surface-variant">№{step.num}</span>
+                <span className="w-6 shrink-0 text-xs text-on-surface-variant">{step.num}</span>
                 <p className="text-sm leading-relaxed">{step.text}</p>
               </div>
             ))}
@@ -88,7 +88,7 @@ export function ScenarioComparisonView({ scenarios }: Props) {
               <div className="px-3.5">
                 {sc.unique.map((step) => (
                   <div key={step.num} className="flex gap-2.5 border-t border-outline-variant py-2.5 first:border-none">
-                    <span className="w-6 shrink-0 text-xs text-on-surface-variant">№{step.num}</span>
+                    <span className="w-6 shrink-0 text-xs text-on-surface-variant">{step.num}</span>
                     <p className="text-sm leading-relaxed">{step.text}</p>
                   </div>
                 ))}
