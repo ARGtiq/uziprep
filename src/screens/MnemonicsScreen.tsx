@@ -1,5 +1,5 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import { db } from '@/lib/db';
+import { db, type SavedMnemonic } from '@/lib/db';
 import { Icon } from '@/components/Icon';
 
 interface Props {
@@ -9,9 +9,9 @@ interface Props {
 
 /** Все сохранённые мнемоники в одном месте, сгруппированные по станции. */
 export function MnemonicsScreen({ onBack, onOpenStation }: Props) {
-  const all = useLiveQuery(() => db.mnemonics.orderBy('updatedAt').reverse().toArray(), [], []) ?? [];
+  const all: SavedMnemonic[] = useLiveQuery(() => db.mnemonics.orderBy('updatedAt').reverse().toArray(), [], []) ?? [];
 
-  const grouped = new Map<string, { stationTitle: string; items: typeof all }>();
+  const grouped = new Map<string, { stationTitle: string; items: SavedMnemonic[] }>();
   for (const m of all) {
     if (!grouped.has(m.stationId)) grouped.set(m.stationId, { stationTitle: m.stationTitle, items: [] });
     grouped.get(m.stationId)!.items.push(m);
