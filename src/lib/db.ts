@@ -1,6 +1,7 @@
 import Dexie, { type Table } from 'dexie';
 import type { StationProgress } from '@/types/station';
 import type { ChatMessage } from '@/lib/aiClient';
+import type { BlockMastery } from '@/lib/mastery';
 
 interface SyncQueueItem {
   id?: number;
@@ -32,6 +33,7 @@ export class UziPrepDB extends Dexie {
   syncQueue!: Table<SyncQueueItem, number>;
   chatMessages!: Table<ChatThreadMessage, number>;
   examAttempts!: Table<ExamAttempt, number>;
+  blockMastery!: Table<BlockMastery, string>;
 
   constructor() {
     super('uziprep');
@@ -44,6 +46,13 @@ export class UziPrepDB extends Dexie {
       syncQueue: '++id, synced',
       chatMessages: '++id, threadKey, createdAt',
       examAttempts: '++id, synced, finishedAt',
+    });
+    this.version(3).stores({
+      progress: 'stationId',
+      syncQueue: '++id, synced',
+      chatMessages: '++id, threadKey, createdAt',
+      examAttempts: '++id, synced, finishedAt',
+      blockMastery: 'key, stationId, dueAt, level',
     });
   }
 }

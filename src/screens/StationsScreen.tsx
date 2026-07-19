@@ -4,15 +4,18 @@ import { STATIONS } from '@/data/stations';
 import type { StationCategory } from '@/types/station';
 import { Icon } from '@/components/Icon';
 import { db } from '@/lib/db';
+import { getStreak, getStationXp, levelForXp } from '@/lib/streakAndXp';
 
 const CATS: Array<StationCategory | 'Все'> = ['Все', 'УЗИ', 'Неотложная помощь', 'Общие навыки'];
 
 interface Props {
   onOpenStation: (id: string) => void;
   onGoExam: () => void;
+  onOpenWeakSpots: () => void;
 }
 
-export function StationsScreen({ onOpenStation, onGoExam }: Props) {
+export function StationsScreen({ onOpenStation, onGoExam, onOpenWeakSpots }: Props) {
+  const streak = getStreak();
   const [filter, setFilter] = useState<(typeof CATS)[number]>('Все');
   const list = STATIONS.filter((s) => filter === 'Все' || s.category === filter);
   const allProgress = useLiveQuery(() => db.progress.toArray(), []) ?? [];
@@ -28,7 +31,9 @@ export function StationsScreen({ onOpenStation, onGoExam }: Props) {
     // любом из них (ключи чек-листа теперь содержат имя сценария) —
     // берём в знаменатель тот сценарий, где реально есть отмеченные
     // пункты, а не всегда первый по умолчанию.
-    const scenarios = station.scenarios?.length ? station.scenarios : [{ name: 'default', steps: station.steps, checklist: station.checklist }];
+    const scenarios = station.scenarios?.length
+      ? station.scenarios
+      : [{ name: 'default', steps: station.steps, stepBlocks: [], checklist: station.checklist }];
     let bestRatio = 0;
     for (const sc of scenarios) {
       const total = sc.checklist.reduce((sum, b) => sum + b.items.length, 0);
@@ -54,6 +59,19 @@ export function StationsScreen({ onOpenStation, onGoExam }: Props) {
         >
           Начать пробный экзамен
           <Icon name="arrow_forward" size={18} />
+        </button>
+      </div>
+
+      <div className="mb-3 flex items-center justify-between gap-2">
+        {streak.count > 0 ? (
+          <div className="flex items-center gap-1.5 text-sm font-semibold text-primary">
+            🔥 {streak.count} {streak.count === 1 ? 'день' : 'дня'} подряд
+          </div>
+        ) : (
+          <span />
+        )}
+        <button onClick={onOpenWeakSpots} className="flex items-center gap-1 text-xs font-semibold text-on-surface-variant">
+          Слабые места <Icon name="arrow_forward" size={14} />
         </button>
       </div>
 
@@ -97,6 +115,12 @@ export function StationsScreen({ onOpenStation, onGoExam }: Props) {
                   )}
                 </div>
                 <h3 className="text-base font-semibold">{s.title}</h3>
+                {(() => {
+                  const xp = getStationXp(s.id);
+                  if (xp === 0) return null;
+                  const { label } = levelForXp(xp);
+                  return <div className="mb-0.5 text-xs font-medium text-primary">{label} · {xp} XP</div>;
+                })()}
                 <div className="mb-0.5 flex items-center gap-1 text-xs text-on-surface-variant">
                   <Icon name="schedule" size={14} /> {s.timeMinutes} мин
                 </div>

@@ -141,3 +141,15 @@ export function streamAiTutor(messages: ChatMessage[], stationContext?: string):
   const { provider } = getAiSettings();
   return provider === 'google' ? streamGoogle(messages, stationContext) : streamOpenRouter(messages, stationContext);
 }
+
+/**
+ * Разовый запрос без сохранения в историю диалога — для одноразовых
+ * генераций вроде мнемоник, где не нужен полноценный чат-контекст.
+ */
+export async function askAiTutorOnce(prompt: string): Promise<string> {
+  let full = '';
+  for await (const chunk of streamAiTutor([{ role: 'user', content: prompt }])) {
+    full += chunk;
+  }
+  return full || 'Не удалось получить ответ.';
+}

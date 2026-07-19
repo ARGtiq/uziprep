@@ -5,6 +5,17 @@ export interface ChecklistBlock {
   items: string[];
 }
 
+/** Один пункт алгоритма с исходным номером из паспорта станции. */
+export interface StepItem {
+  num: string; // "1", "14" и т.д. — как в паспорте, для отображения и как ключ мастерства блока
+  text: string;
+}
+
+export interface StepBlock {
+  block: string;
+  items: StepItem[];
+}
+
 export interface QuizQuestion {
   id: string;
   question: string;
@@ -21,7 +32,10 @@ export interface QuizQuestion {
  */
 export interface StationScenario {
   name: string;
+  /** Плоский список текста шагов — для старого кода (ordering-игра, MCQ-пул) */
   steps: string[];
+  /** Та же последовательность, но с сохранением блоков и номеров из паспорта — для аккордеона, мастерства блоков, вкладки "Сравнение" */
+  stepBlocks: StepBlock[];
   checklist: ChecklistBlock[];
 }
 

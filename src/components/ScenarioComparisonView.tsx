@@ -45,10 +45,10 @@ export function ScenarioComparisonView({ scenarios }: Props) {
           <p className="mb-5 text-sm text-on-surface-variant">Общих шагов между сценариями нет.</p>
         ) : (
           <div className="mb-5 flex flex-col gap-0.5">
-            {stepsCmp.common.map((step, i) => (
-              <div key={i} className="flex gap-2.5 border-b border-outline-variant py-2.5 last:border-none">
-                <span className="text-xs text-on-surface-variant">{i + 1}.</span>
-                <p className="text-sm leading-relaxed">{step}</p>
+            {stepsCmp.common.map((step) => (
+              <div key={step.num} className="flex gap-2.5 border-b border-outline-variant py-2.5 last:border-none">
+                <span className="w-6 shrink-0 text-xs text-on-surface-variant">№{step.num}</span>
+                <p className="text-sm leading-relaxed">{step.text}</p>
               </div>
             ))}
           </div>
@@ -86,10 +86,10 @@ export function ScenarioComparisonView({ scenarios }: Props) {
                 {sc.unique.length === 0 && <span className="ml-2 text-xs font-normal text-on-surface-variant">(отличий нет)</span>}
               </summary>
               <div className="px-3.5">
-                {sc.unique.map((step, i) => (
-                  <div key={i} className="flex gap-2.5 border-t border-outline-variant py-2.5 first:border-none">
-                    <span className="text-xs text-on-surface-variant">{i + 1}.</span>
-                    <p className="text-sm leading-relaxed">{step}</p>
+                {sc.unique.map((step) => (
+                  <div key={step.num} className="flex gap-2.5 border-t border-outline-variant py-2.5 first:border-none">
+                    <span className="w-6 shrink-0 text-xs text-on-surface-variant">№{step.num}</span>
+                    <p className="text-sm leading-relaxed">{step.text}</p>
                   </div>
                 ))}
               </div>

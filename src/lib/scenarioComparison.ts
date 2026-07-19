@@ -1,8 +1,8 @@
-import type { ChecklistBlock, StationScenario } from '@/types/station';
+import type { ChecklistBlock, StationScenario, StepItem } from '@/types/station';
 
 export interface StepComparison {
-  common: string[];
-  perScenario: { name: string; unique: string[] }[];
+  common: StepItem[];
+  perScenario: { name: string; unique: StepItem[] }[];
 }
 
 export interface ChecklistComparison {
@@ -12,31 +12,30 @@ export interface ChecklistComparison {
 
 /**
  * Шаг считается общим, если его точный текст встречается во всех
- * сценариях станции — независимо от того, в каком блоке он стоит.
- * На практике это совпадает с реальностью паспортов: блоки "Начало"
- * и "Завершение" почти всегда дословно одинаковы для всех сценариев
- * одной станции, а различается только "рабочая" середина (конкретный
- * орган/доступ), даже если у неё то же имя блока.
+ * сценариях станции — независимо от блока. Номер пункта сохраняется
+ * из паспорта того сценария, где шаг впервые встретился (для общих
+ * шагов номер обычно совпадает у всех, т.к. блоки "Начало"/"Завершение"
+ * идут в одном и том же месте последовательности).
  */
 export function compareSteps(scenarios: StationScenario[]): StepComparison {
   if (scenarios.length < 2) {
-    return { common: [], perScenario: scenarios.map((s) => ({ name: s.name, unique: s.steps })) };
+    return { common: [], perScenario: scenarios.map((s) => ({ name: s.name, unique: flattenSteps(s) })) };
   }
-  const sets = scenarios.map((s) => new Set(s.steps));
-  const common = scenarios[0].steps.filter((step) => sets.every((set) => set.has(step)));
-  const commonSet = new Set(common);
+  const textSets = scenarios.map((s) => new Set(flattenSteps(s).map((i) => i.text)));
+  const firstFlat = flattenSteps(scenarios[0]);
+  const common = firstFlat.filter((item) => textSets.every((set) => set.has(item.text)));
+  const commonTextSet = new Set(common.map((i) => i.text));
   const perScenario = scenarios.map((s) => ({
     name: s.name,
-    unique: s.steps.filter((step) => !commonSet.has(step)),
+    unique: flattenSteps(s).filter((item) => !commonTextSet.has(item.text)),
   }));
   return { common, perScenario };
 }
 
-/**
- * Та же логика на уровне пунктов чек-листа, но с сохранением
- * группировки по блокам (чтобы "Общие пункты" и "Отличия" по-прежнему
- * читались структурированно, а не единым списком).
- */
+function flattenSteps(scenario: StationScenario): StepItem[] {
+  return scenario.stepBlocks.flatMap((b) => b.items);
+}
+
 export function compareChecklist(scenarios: StationScenario[]): ChecklistComparison {
   if (scenarios.length < 2) {
     return { common: [], perScenario: scenarios.map((s) => ({ name: s.name, blocks: s.checklist })) };
@@ -72,18 +71,11 @@ export function compareChecklist(scenarios: StationScenario[]): ChecklistCompari
  */
 export const MAX_EXAM_ORDERING_STEPS = 20;
 
-/**
- * Даёт список шагов для ordering-задания ИМЕННО в контексте экзамена.
- * Для станций с несколькими сценариями сначала пробует "общее ядро"
- * (пересечение всех сценариев, см. compareSteps) — оно заметно короче
- * полного протокола любого отдельного сценария и остаётся честным
- * самодостаточным заданием. Если даже общее ядро длиннее порога —
- * станция целиком исключается из пула экзамена (null).
- */
 export function getExamOrderingSteps(station: { steps: string[]; scenarios?: StationScenario[] }): string[] | null {
   if (station.scenarios && station.scenarios.length > 1) {
     const { common } = compareSteps(station.scenarios);
-    return common.length > 0 && common.length <= MAX_EXAM_ORDERING_STEPS ? common : null;
+    const texts = common.map((i) => i.text);
+    return texts.length > 0 && texts.length <= MAX_EXAM_ORDERING_STEPS ? texts : null;
   }
   return station.steps.length <= MAX_EXAM_ORDERING_STEPS ? station.steps : null;
 }
