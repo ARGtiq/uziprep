@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { STATIONS } from '@/data/stations';
 import type { QuizQuestion } from '@/types/station';
 import { Icon } from '@/components/Icon';
+import { recordQuestionResult } from '@/lib/db';
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -74,7 +75,9 @@ export function ExamFeverMode({ onExit }: Props) {
   function select(i: number) {
     if (selected !== null || gameOver) return;
     setSelected(i);
-    if (i !== q.correctIndex) {
+    const correct = i === q.correctIndex;
+    recordQuestionResult(q.id, correct);
+    if (!correct) {
       setTimedOut(false);
       setGameOver(true);
     }

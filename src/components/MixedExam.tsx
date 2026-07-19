@@ -3,7 +3,7 @@ import { STATIONS } from '@/data/stations';
 import type { QuizQuestion, Station } from '@/types/station';
 import { StepOrderingGame } from '@/components/StepOrderingGame';
 import { Icon } from '@/components/Icon';
-import { saveExamAttempt } from '@/lib/db';
+import { saveExamAttempt, recordQuestionResult } from '@/lib/db';
 import { getExamOrderingSteps } from '@/lib/scenarioComparison';
 
 type ExamItem =
@@ -34,10 +34,12 @@ function shuffle<T>(arr: T[]): T[] {
  * помогает уложиться в порог, в экзамен просто не попадают — полная
  * версия остаётся в бесштрафном режиме "Тренировка без таймера".
  */
-function buildExamPool(count: number): ExamItem[] {
-  const mcqPool: ExamItem[] = shuffle(STATIONS.flatMap((s) => s.quiz ?? [])).map((q) => ({ kind: 'mcq', question: q }));
+function buildExamPool(count: number, allowedStationIds?: string[]): ExamItem[] {
+  const stationPool = allowedStationIds ? STATIONS.filter((s) => allowedStationIds.includes(s.id)) : STATIONS;
 
-  const orderingCandidates = STATIONS.map((s) => {
+  const mcqPool: ExamItem[] = shuffle(stationPool.flatMap((s) => s.quiz ?? [])).map((q) => ({ kind: 'mcq', question: q }));
+
+  const orderingCandidates = stationPool.map((s) => {
     const steps = getExamOrderingSteps(s);
     return steps ? { ...s, steps } : null;
   }).filter((s): s is Station => s !== null);
@@ -61,10 +63,12 @@ interface Props {
   questionCount: number;
   secondsPerRun: number;
   onExit: () => void;
+  /** Если задано — пул строится только из этих станций (для режима "По пройденным") */
+  allowedStationIds?: string[];
 }
 
-export function MixedExam({ questionCount, secondsPerRun, onExit }: Props) {
-  const items = useMemo(() => buildExamPool(questionCount), [questionCount]);
+export function MixedExam({ questionCount, secondsPerRun, onExit, allowedStationIds }: Props) {
+  const items = useMemo(() => buildExamPool(questionCount, allowedStationIds), [questionCount, allowedStationIds]);
   const [index, setIndex] = useState(0);
   const [scores, setScores] = useState<(number | null)[]>(() => items.map(() => null));
   const [mcqSelected, setMcqSelected] = useState<number | null>(null);
@@ -177,11 +181,13 @@ export function MixedExam({ questionCount, secondsPerRun, onExit }: Props) {
   function selectMcq(optionIndex: number, q: QuizQuestion) {
     if (mcqSelected !== null) return;
     setMcqSelected(optionIndex);
+    const correct = optionIndex === q.correctIndex;
     setScores((prev) => {
       const next = [...prev];
-      next[index] = optionIndex === q.correctIndex ? 1 : 0;
+      next[index] = correct ? 1 : 0;
       return next;
     });
+    recordQuestionResult(q.id, correct);
   }
 
   function finishOrdering(ratio: number) {

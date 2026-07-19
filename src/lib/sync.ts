@@ -82,6 +82,7 @@ interface MiscRemoteRow {
   xp: unknown;
   mastery: unknown[];
   best_times: unknown[];
+  question_stats: unknown[];
   updated_at: string;
 }
 
@@ -105,6 +106,7 @@ export async function pushMiscState(userId: string) {
       xp: state.xp,
       mastery: state.mastery,
       best_times: state.bestTimes,
+      question_stats: state.questionStats,
       updated_at: new Date(state.updatedAt).toISOString(),
     },
     { onConflict: 'user_id' },
@@ -127,6 +129,7 @@ export async function pullMiscState(userId: string) {
       xp: row.xp,
       mastery: row.mastery ?? [],
       bestTimes: row.best_times ?? [],
+      questionStats: row.question_stats ?? [],
     });
     markSyncedNow(remoteUpdatedAt);
   }

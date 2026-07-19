@@ -8,10 +8,12 @@ import { TrainingModeScreen, type TrainingKind } from '@/screens/TrainingModeScr
 import { XpBadge } from '@/components/XpBadge';
 import { ExamDayChecklistScreen } from '@/screens/ExamDayChecklistScreen';
 import { ExamHistoryChart } from '@/components/ExamHistoryChart';
+import { SequentialMcqExam } from '@/components/SequentialMcqExam';
+import { getStudiedStationIds } from '@/lib/studiedStations';
 import { Icon } from '@/components/Icon';
 import { listExamAttempts } from '@/lib/db';
 
-type ExamMode = 'menu' | 'ordering-pick' | 'ordering-play' | 'mixed' | 'fever' | 'examday' | TrainingKind;
+type ExamMode = 'menu' | 'ordering-pick' | 'ordering-play' | 'mixed' | 'mixed-studied' | 'fever' | 'nonstop' | 'wrong-only' | 'examday' | TrainingKind;
 
 const FORMATS = [
   { count: 10, seconds: 5 * 60, label: 'Быстрая проверка', sub: '~10 заданий · 5 минут' },
@@ -30,9 +32,29 @@ export function ExamScreen() {
   const canRunMixed = availableQuestions > 0 || orderableStations.length > 0;
   const attempts = useLiveQuery(() => listExamAttempts(5), [], []) ?? [];
   const chartAttempts = useLiveQuery(() => listExamAttempts(20), [], []) ?? [];
+  const studiedStationIds = useLiveQuery(() => getStudiedStationIds(), [], []) ?? [];
 
   if (mode === 'mixed') {
     return <MixedExam questionCount={format.count} secondsPerRun={format.seconds} onExit={() => setMode('menu')} />;
+  }
+
+  if (mode === 'mixed-studied') {
+    return (
+      <MixedExam
+        questionCount={format.count}
+        secondsPerRun={format.seconds}
+        onExit={() => setMode('menu')}
+        allowedStationIds={studiedStationIds}
+      />
+    );
+  }
+
+  if (mode === 'nonstop') {
+    return <SequentialMcqExam source="all" onExit={() => setMode('menu')} />;
+  }
+
+  if (mode === 'wrong-only') {
+    return <SequentialMcqExam source="wrong" onExit={() => setMode('menu')} />;
   }
 
   if (mode === 'fever') {
@@ -152,7 +174,7 @@ export function ExamScreen() {
       <button
         onClick={() => setMode('fever')}
         disabled={availableQuestions === 0}
-        className="flex w-full items-center gap-3 rounded-m3-md bg-error/10 p-3.5 text-left disabled:opacity-40"
+        className="mb-2.5 flex w-full items-center gap-3 rounded-m3-md bg-error/10 p-3.5 text-left disabled:opacity-40"
       >
         <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-m3-md bg-error/20 text-error">
           <Icon name="emergency" size={22} />
@@ -160,6 +182,49 @@ export function ExamScreen() {
         <div>
           <b className="text-sm text-error">Экзаменационная лихорадка</b>
           <div className="text-xs text-on-surface-variant">Серия вопросов с убывающим временем на ответ — до первой ошибки</div>
+        </div>
+      </button>
+
+      <button
+        onClick={() => setMode('nonstop')}
+        disabled={availableQuestions === 0}
+        className="mb-2.5 flex w-full items-center gap-3 rounded-m3-md bg-surface-container-low p-3.5 text-left disabled:opacity-40"
+      >
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-m3-md bg-primary-container text-on-primary-container">
+          <Icon name="check_circle" size={22} />
+        </span>
+        <div>
+          <b className="text-sm">Нон-стоп</b>
+          <div className="text-xs text-on-surface-variant">Весь банк вопросов подряд, без лимита времени ({availableQuestions})</div>
+        </div>
+      </button>
+
+      <button
+        onClick={() => setMode('wrong-only')}
+        className="mb-2.5 flex w-full items-center gap-3 rounded-m3-md bg-surface-container-low p-3.5 text-left"
+      >
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-m3-md bg-primary-container text-on-primary-container">
+          <Icon name="refresh" size={22} />
+        </span>
+        <div>
+          <b className="text-sm">Ошибки</b>
+          <div className="text-xs text-on-surface-variant">Повторить только вопросы, где хоть раз ответил неверно</div>
+        </div>
+      </button>
+
+      <button
+        onClick={() => setMode('mixed-studied')}
+        disabled={studiedStationIds.length === 0}
+        className="mb-2.5 flex w-full items-center gap-3 rounded-m3-md bg-surface-container-low p-3.5 text-left disabled:opacity-40"
+      >
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-m3-md bg-primary-container text-on-primary-container">
+          <Icon name="workspace_premium" size={22} />
+        </span>
+        <div>
+          <b className="text-sm">По пройденным</b>
+          <div className="text-xs text-on-surface-variant">
+            {studiedStationIds.length > 0 ? `Только станции, которые уже открывал (${studiedStationIds.length})` : 'Пока нет станций с прогрессом'}
+          </div>
         </div>
       </button>
 

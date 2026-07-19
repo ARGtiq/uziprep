@@ -36,6 +36,7 @@ export interface MiscStateBlob {
   xp: unknown;
   mastery: unknown[];
   bestTimes: unknown[];
+  questionStats: unknown[];
   updatedAt: number;
 }
 
@@ -43,8 +44,9 @@ export async function exportLocalState(): Promise<MiscStateBlob> {
   const streak = JSON.parse(localStorage.getItem('uziprep.streak') ?? '{}');
   const xp = JSON.parse(localStorage.getItem('uziprep.xp') ?? '{}');
   const mastery = await db.blockMastery.toArray();
+  const questionStats = await db.questionStats.toArray();
   const bestTimes = await getAllBestTimesRaw();
-  return { streak, xp, mastery, bestTimes, updatedAt: getLocalUpdatedAt() };
+  return { streak, xp, mastery, bestTimes, questionStats, updatedAt: getLocalUpdatedAt() };
 }
 
 export async function importLocalState(blob: Omit<MiscStateBlob, 'updatedAt'>) {
@@ -54,6 +56,11 @@ export async function importLocalState(blob: Omit<MiscStateBlob, 'updatedAt'>) {
   if (Array.isArray(blob.mastery) && blob.mastery.length) {
     // @ts-expect-error — форма гарантирована источником (Supabase), не пересобираем типы ради синка
     await db.blockMastery.bulkPut(blob.mastery);
+  }
+  await db.questionStats.clear();
+  if (Array.isArray(blob.questionStats) && blob.questionStats.length) {
+    // @ts-expect-error — то же самое
+    await db.questionStats.bulkPut(blob.questionStats);
   }
   await setAllBestTimesRaw(blob.bestTimes);
 }

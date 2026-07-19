@@ -28,12 +28,21 @@ export interface ExamAttempt {
   synced: 0 | 1;
 }
 
+export interface QuestionStat {
+  questionId: string;
+  correctCount: number;
+  wrongCount: number;
+  lastResult: 'correct' | 'wrong' | null;
+  lastSeenAt: number;
+}
+
 export class UziPrepDB extends Dexie {
   progress!: Table<StationProgress, string>;
   syncQueue!: Table<SyncQueueItem, number>;
   chatMessages!: Table<ChatThreadMessage, number>;
   examAttempts!: Table<ExamAttempt, number>;
   blockMastery!: Table<BlockMastery, string>;
+  questionStats!: Table<QuestionStat, string>;
 
   constructor() {
     super('uziprep');
@@ -54,10 +63,35 @@ export class UziPrepDB extends Dexie {
       examAttempts: '++id, synced, finishedAt',
       blockMastery: 'key, stationId, dueAt, level',
     });
+    this.version(4).stores({
+      progress: 'stationId',
+      syncQueue: '++id, synced',
+      chatMessages: '++id, threadKey, createdAt',
+      examAttempts: '++id, synced, finishedAt',
+      blockMastery: 'key, stationId, dueAt, level',
+      questionStats: 'questionId, wrongCount',
+    });
   }
 }
 
 export const db = new UziPrepDB();
+
+export async function recordQuestionResult(questionId: string, correct: boolean) {
+  const existing = await db.questionStats.get(questionId);
+  const next: QuestionStat = {
+    questionId,
+    correctCount: (existing?.correctCount ?? 0) + (correct ? 1 : 0),
+    wrongCount: (existing?.wrongCount ?? 0) + (correct ? 0 : 1),
+    lastResult: correct ? 'correct' : 'wrong',
+    lastSeenAt: Date.now(),
+  };
+  await db.questionStats.put(next);
+}
+
+export async function getWrongQuestionIds(): Promise<Set<string>> {
+  const all = await db.questionStats.where('wrongCount').above(0).toArray();
+  return new Set(all.map((s) => s.questionId));
+}
 
 /**
  * Сохраняет прогресс локально всегда (офлайн-первый подход) и кладёт
