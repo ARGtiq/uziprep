@@ -13,7 +13,7 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'prompt', // ручное подтверждение через UpdateBanner — autoUpdate конфликтовал с этим UI
+      registerType: 'autoUpdate', // тихое автообновление в фоне — баннер подтверждения убран (не работал стабильно), версия в Профиле + ручная кнопка сброса кэша остаются как проверка/аварийный вариант
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         runtimeCaching: [

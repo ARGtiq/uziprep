@@ -17,7 +17,6 @@ import { touchStreak } from '@/lib/streakAndXp';
 import { shouldShowWarmup } from '@/lib/dailyWarmup';
 import { DailyWarmupModal } from '@/components/DailyWarmupModal';
 import { ChangelogModal, shouldShowChangelog, markChangelogSeen } from '@/components/ChangelogModal';
-import { UpdateBanner } from '@/components/UpdateBanner';
 
 type StationsView =
   | { mode: 'list' }
@@ -75,7 +74,6 @@ export default function App() {
   return (
     <div className="mx-auto flex min-h-screen max-w-[1100px]">
       <OfflineBanner />
-      <UpdateBanner />
       {showChangelog && (
         <ChangelogModal
           onClose={() => {

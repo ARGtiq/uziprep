@@ -4,8 +4,8 @@ import { Icon } from '@/components/Icon';
 /**
  * Простая проверка "есть ли активный service worker, контролирующий
  * эту страницу" — прокси для "контент закэширован и готов к офлайну".
- * Не вызывает useRegisterSW() повторно (это уже сделано в UpdateBanner),
- * чтобы не создавать вторую независимую регистрацию SW.
+ * Не вызывает useRegisterSW() — читает состояние напрямую через
+ * navigator.serviceWorker, чтобы не плодить отдельные регистрации SW.
  */
 export function OfflineReadyIndicator() {
   const [ready, setReady] = useState(
