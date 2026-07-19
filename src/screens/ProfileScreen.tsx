@@ -17,7 +17,7 @@ import { extractDominantColorHex } from '@/theme/sources/imageSource';
 import { getSupabaseSettings, saveSupabaseSettings, clearSupabaseSettings } from '@/lib/supabase';
 
 export function ProfileScreen() {
-  const { preference, setPreference, seedHex, setSeedHex, sourceKey, setSourceKey } = useTheme();
+  const { preference, setPreference, seedHex, setSeedHex, sourceKey, setSourceKey, colorfulIcons, setColorfulIcons } = useTheme();
   const { session, loading, configured, authError, signInWithEmail, resendMagicLink, signOut } = useAuth();
   const [email, setEmail] = useState('');
   const [sentTo, setSentTo] = useState<string | null>(null);
@@ -325,6 +325,19 @@ export function ProfileScreen() {
             Работает только внутри нативной Android-обёртки. В браузере — откат на ручной цвет.
           </p>
         )}
+
+        <div className="mt-3 flex items-center justify-between border-t border-outline-variant pt-3">
+          <div>
+            <span className="text-sm">Разноцветные иконки</span>
+            <div className="text-xs text-on-surface-variant">Свой цвет для каждой станции/режима вместо однотонных бейджей</div>
+          </div>
+          <button
+            onClick={() => setColorfulIcons(!colorfulIcons)}
+            className={`h-6 w-11 shrink-0 rounded-full transition-colors ${colorfulIcons ? 'bg-primary' : 'bg-outline-variant'}`}
+          >
+            <div className={`h-5 w-5 rounded-full bg-surface transition-transform ${colorfulIcons ? 'translate-x-5' : 'translate-x-0.5'}`} />
+          </button>
+        </div>
       </div>
 
       <h2 className="mb-2 text-sm font-semibold text-on-surface-variant">Напоминания</h2>

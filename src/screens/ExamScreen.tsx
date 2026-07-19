@@ -11,6 +11,7 @@ import { ExamHistoryChart } from '@/components/ExamHistoryChart';
 import { SequentialMcqExam } from '@/components/SequentialMcqExam';
 import { getStudiedStationIds } from '@/lib/studiedStations';
 import { Icon } from '@/components/Icon';
+import { IconBadge } from '@/components/IconBadge';
 import { listExamAttempts } from '@/lib/db';
 
 type ExamMode = 'menu' | 'ordering-pick' | 'ordering-play' | 'mixed' | 'mixed-studied' | 'fever' | 'nonstop' | 'wrong-only' | 'examday' | TrainingKind;
@@ -84,9 +85,7 @@ export function ExamScreen() {
               onClick={() => { setStationId(s.id); setLastScore(null); setMode('ordering-play'); }}
               className="flex items-center gap-3 rounded-m3-md bg-surface-container-low p-3 text-left"
             >
-              <span className="flex h-11 w-11 items-center justify-center rounded-m3-md bg-primary-container text-on-primary-container">
-                <Icon name={s.icon as any} size={22} />
-              </span>
+              <IconBadge icon={s.icon as any} colorKey={s.id} />
               <div>
                 <div className="text-sm font-semibold">{s.title}</div>
                 <div className="text-xs text-on-surface-variant">{s.steps.length} шагов</div>
@@ -162,9 +161,7 @@ export function ExamScreen() {
         onClick={() => setMode('ordering-pick')}
         className="mb-2.5 flex w-full items-center gap-3 rounded-m3-md bg-secondary-container p-3.5 text-left"
       >
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-m3-md bg-primary-container text-on-primary-container">
-          <Icon name="drag_indicator" size={22} />
-        </span>
+        <IconBadge icon="drag_indicator" colorKey="ordering-pick" />
         <div>
           <b className="text-sm text-on-secondary-container">Тренировка порядка без таймера</b>
           <div className="text-xs text-on-surface-variant">Отдельно потренироваться на одной станции</div>
@@ -176,9 +173,7 @@ export function ExamScreen() {
         disabled={availableQuestions === 0}
         className="mb-2.5 flex w-full items-center gap-3 rounded-m3-md bg-error/10 p-3.5 text-left disabled:opacity-40"
       >
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-m3-md bg-error/20 text-error">
-          <Icon name="emergency" size={22} />
-        </span>
+        <IconBadge icon="emergency" colorKey="fever" />
         <div>
           <b className="text-sm text-error">Экзаменационная лихорадка</b>
           <div className="text-xs text-on-surface-variant">Серия вопросов с убывающим временем на ответ — до первой ошибки</div>
@@ -190,9 +185,7 @@ export function ExamScreen() {
         disabled={availableQuestions === 0}
         className="mb-2.5 flex w-full items-center gap-3 rounded-m3-md bg-surface-container-low p-3.5 text-left disabled:opacity-40"
       >
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-m3-md bg-primary-container text-on-primary-container">
-          <Icon name="check_circle" size={22} />
-        </span>
+        <IconBadge icon="check_circle" colorKey="nonstop" />
         <div>
           <b className="text-sm">Нон-стоп</b>
           <div className="text-xs text-on-surface-variant">Весь банк вопросов подряд, без лимита времени ({availableQuestions})</div>
@@ -203,9 +196,7 @@ export function ExamScreen() {
         onClick={() => setMode('wrong-only')}
         className="mb-2.5 flex w-full items-center gap-3 rounded-m3-md bg-surface-container-low p-3.5 text-left"
       >
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-m3-md bg-primary-container text-on-primary-container">
-          <Icon name="refresh" size={22} />
-        </span>
+        <IconBadge icon="refresh" colorKey="wrong-only" />
         <div>
           <b className="text-sm">Ошибки</b>
           <div className="text-xs text-on-surface-variant">Повторить только вопросы, где хоть раз ответил неверно</div>
@@ -217,9 +208,7 @@ export function ExamScreen() {
         disabled={studiedStationIds.length === 0}
         className="mb-2.5 flex w-full items-center gap-3 rounded-m3-md bg-surface-container-low p-3.5 text-left disabled:opacity-40"
       >
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-m3-md bg-primary-container text-on-primary-container">
-          <Icon name="workspace_premium" size={22} />
-        </span>
+        <IconBadge icon="workspace_premium" colorKey="mixed-studied" />
         <div>
           <b className="text-sm">По пройденным</b>
           <div className="text-xs text-on-surface-variant">
@@ -242,9 +231,7 @@ export function ExamScreen() {
             onClick={() => setMode(kind)}
             className="flex items-center gap-3 rounded-m3-md bg-surface-container-low p-3 text-left"
           >
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-m3-md bg-primary-container text-on-primary-container">
-              <Icon name={icon} size={20} />
-            </span>
+            <IconBadge icon={icon} colorKey={kind} size="sm" />
             <b className="text-sm">{label}</b>
           </button>
         ))}

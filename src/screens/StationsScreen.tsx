@@ -3,6 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { STATIONS } from '@/data/stations';
 import type { StationCategory } from '@/types/station';
 import { Icon } from '@/components/Icon';
+import { IconBadge } from '@/components/IconBadge';
 import { db } from '@/lib/db';
 import { getStreak, getStationXp, levelForXp, getAllXp } from '@/lib/streakAndXp';
 import { TodayReviewWidget } from '@/components/TodayReviewWidget';
@@ -107,9 +108,7 @@ export function StationsScreen({ onOpenStation, onGoExam, onOpenWeakSpots }: Pro
               onClick={() => onOpenStation(s.id)}
               className="flex gap-3.5 rounded-m3-md bg-surface-container-low p-3.5 text-left"
             >
-              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-m3-md bg-primary-container text-on-primary-container">
-                <Icon name={s.icon as any} size={24} />
-              </span>
+              <IconBadge icon={s.icon as any} colorKey={s.id} size="md" />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-2">
                   <div className="text-xs font-semibold uppercase tracking-wide text-primary">{s.category}</div>

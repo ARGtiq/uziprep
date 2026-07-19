@@ -7,6 +7,7 @@ import { FindTheErrorTrainer } from '@/components/FindTheErrorTrainer';
 import { OcclusionTrainer } from '@/components/OcclusionTrainer';
 import { VoiceRecallTrainer } from '@/components/VoiceRecallTrainer';
 import { Icon } from '@/components/Icon';
+import { IconBadge } from '@/components/IconBadge';
 
 export type TrainingKind = 'challenge' | 'core-diff' | 'find-error' | 'occlusion' | 'voice';
 
@@ -70,9 +71,7 @@ export function TrainingModeScreen({ kind, onExit }: Props) {
         <div className="flex flex-col gap-2">
           {eligibleStations.map((s) => (
             <button key={s.id} onClick={() => pick(s)} className="flex items-center gap-3 rounded-m3-md bg-surface-container-low p-3 text-left">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-m3-md bg-primary-container text-on-primary-container">
-                <Icon name={s.icon as any} size={22} />
-              </span>
+              <IconBadge icon={s.icon as any} colorKey={s.id} />
               <div>
                 <div className="text-sm font-semibold">{s.title}</div>
                 <div className="text-xs text-on-surface-variant">{s.category}</div>
