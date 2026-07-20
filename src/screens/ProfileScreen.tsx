@@ -423,7 +423,6 @@ export function ProfileScreen() {
           </div>
         </div>
       </div>
-      </div>
 
       <h2 className="mb-2 text-sm font-semibold text-on-surface-variant">Дата экзамена</h2>
       <div className="mb-4 rounded-m3-md bg-surface-container-low p-3.5">

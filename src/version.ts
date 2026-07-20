@@ -1,4 +1,4 @@
-export const APP_VERSION = '0.8.0';
+export const APP_VERSION = '0.8.1';
 
 export interface ChangelogEntry {
   version: string;
@@ -13,6 +13,11 @@ export interface ChangelogEntry {
  * закэшированной старой.
  */
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '0.8.1',
+    date: '2026-07-20',
+    items: ['Fix: сборка падала из-за лишнего закрывающего </div> в ProfileScreen (появился при добавлении регулировки шрифта)'],
+  },
   {
     version: '0.8.0',
     date: '2026-07-20',
