@@ -177,21 +177,24 @@ export function ExamScreen() {
       <h2 className="mb-2 mt-6 text-sm font-semibold text-on-surface-variant">Другие режимы тренировки</h2>
       <div className="flex flex-col gap-2">
         {([
-          ['blocks', 'По блокам (конкретная станция)', 'grid_view'],
-          ['full', 'Всё целиком (конкретная станция)', 'drag_indicator'],
-          ['challenge', 'Без права на ошибку', 'emergency'],
-          ['core-diff', 'Ядро → отличия', 'compare'],
-          ['find-error', 'Найди ошибку', 'cancel'],
-          ['occlusion', 'Скрой и вспомни', 'auto_awesome'],
-          ['voice', 'Расскажи вслух', 'forum'],
-        ] as [TrainingKind, string, any][]).map(([kind, label, icon]) => (
+          ['blocks', 'По блокам', 'grid_view', 'Собираешь порядок блок за блоком — основной способ разучить станцию'],
+          ['full', 'Всё целиком', 'drag_indicator', 'Весь алгоритм станции одним списком, без деления на блоки'],
+          ['challenge', 'Без права на ошибку', 'emergency', 'Одна ошибка в любом блоке — начинай прогон заново'],
+          ['core-diff', 'Ядро → отличия', 'compare', 'Сначала общее для всех сценариев, потом — что отличает конкретный'],
+          ['find-error', 'Найди ошибку', 'cancel', 'Два шага переставлены местами — найди и укажи оба'],
+          ['occlusion', 'Скрой и вспомни', 'auto_awesome', 'Часть слов в шаге спрятана — вспомни, потом сверься'],
+          ['voice', 'Расскажи вслух', 'forum', 'Проговори алгоритм своими словами, AI сверит с эталоном'],
+        ] as [TrainingKind, string, any, string][]).map(([kind, label, icon, desc]) => (
           <button
             key={kind}
             onClick={() => setMode(kind)}
             className="flex items-center gap-3 rounded-m3-md bg-surface-container-low p-3 text-left"
           >
             <IconBadge icon={icon} colorKey={kind} size="sm" />
-            <b className="text-sm">{label}</b>
+            <div>
+              <b className="text-sm">{label}</b>
+              <div className="text-xs text-on-surface-variant">{desc}</div>
+            </div>
           </button>
         ))}
 

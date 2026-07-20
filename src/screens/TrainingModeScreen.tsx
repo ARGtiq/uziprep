@@ -14,14 +14,14 @@ import { IconBadge } from '@/components/IconBadge';
 
 export type TrainingKind = 'blocks' | 'challenge' | 'core-diff' | 'find-error' | 'occlusion' | 'voice' | 'full';
 
-const KIND_META: Record<TrainingKind, { label: string; icon: string; requiresMultiScenario?: boolean }> = {
-  blocks: { label: 'По блокам', icon: 'grid_view' },
-  challenge: { label: 'Без права на ошибку', icon: 'emergency' },
-  'core-diff': { label: 'Ядро → отличия', icon: 'compare', requiresMultiScenario: true },
-  'find-error': { label: 'Найди ошибку', icon: 'cancel' },
-  occlusion: { label: 'Скрой и вспомни', icon: 'auto_awesome' },
-  voice: { label: 'Расскажи вслух', icon: 'forum' },
-  full: { label: 'Всё целиком', icon: 'drag_indicator' },
+const KIND_META: Record<TrainingKind, { label: string; icon: string; description: string; requiresMultiScenario?: boolean }> = {
+  blocks: { label: 'По блокам', icon: 'grid_view', description: 'Собираешь порядок блок за блоком — основной способ разучить станцию' },
+  challenge: { label: 'Без права на ошибку', icon: 'emergency', description: 'Одна ошибка в любом блоке — начинай прогон заново' },
+  'core-diff': { label: 'Ядро → отличия', icon: 'compare', description: 'Сначала общее для всех сценариев, потом — что отличает конкретный', requiresMultiScenario: true },
+  'find-error': { label: 'Найди ошибку', icon: 'cancel', description: 'Два шага переставлены местами — найди и укажи оба' },
+  occlusion: { label: 'Скрой и вспомни', icon: 'auto_awesome', description: 'Часть слов в шаге спрятана — вспомни, потом сверься' },
+  voice: { label: 'Расскажи вслух', icon: 'forum', description: 'Проговори алгоритм своими словами, AI сверит с эталоном' },
+  full: { label: 'Всё целиком', icon: 'drag_indicator', description: 'Весь алгоритм станции одним списком, без деления на блоки' },
 };
 
 function pickScenario(station: Station): StationScenario | undefined {
@@ -64,6 +64,7 @@ export function TrainingModeScreen({ kind, onExit }: Props) {
           <Icon name="arrow_back" size={16} /> Назад
         </button>
         <h1 className="mb-1 text-xl font-semibold">{meta.label}</h1>
+        <p className="mb-1 text-xs text-on-surface-variant">{meta.description}</p>
         <p className="mb-4 text-sm text-on-surface-variant">Выбери станцию или начни со случайной.</p>
 
         <button onClick={pickRandom} className="mb-4 flex w-full items-center gap-3 rounded-m3-md bg-primary-container p-3.5 text-left">

@@ -39,23 +39,26 @@ export interface MiscStateBlob {
   questionStats: unknown[];
   mnemonics: unknown[];
   whyExplanations: unknown[];
+  character: unknown;
   updatedAt: number;
 }
 
 export async function exportLocalState(): Promise<MiscStateBlob> {
   const streak = JSON.parse(localStorage.getItem('uziprep.streak') ?? '{}');
   const xp = JSON.parse(localStorage.getItem('uziprep.xp') ?? '{}');
+  const character = JSON.parse(localStorage.getItem('uziprep.character') ?? 'null');
   const mastery = await db.blockMastery.toArray();
   const questionStats = await db.questionStats.toArray();
   const mnemonics = await db.mnemonics.toArray();
   const whyExplanations = await db.whyExplanations.toArray();
   const bestTimes = await getAllBestTimesRaw();
-  return { streak, xp, mastery, bestTimes, questionStats, mnemonics, whyExplanations, updatedAt: getLocalUpdatedAt() };
+  return { streak, xp, mastery, bestTimes, questionStats, mnemonics, whyExplanations, character, updatedAt: getLocalUpdatedAt() };
 }
 
 export async function importLocalState(blob: Omit<MiscStateBlob, 'updatedAt'>) {
   localStorage.setItem('uziprep.streak', JSON.stringify(blob.streak));
   localStorage.setItem('uziprep.xp', JSON.stringify(blob.xp));
+  if (blob.character) localStorage.setItem('uziprep.character', JSON.stringify(blob.character));
   await db.blockMastery.clear();
   if (Array.isArray(blob.mastery) && blob.mastery.length) {
     // @ts-expect-error — форма гарантирована источником (Supabase), не пересобираем типы ради синка

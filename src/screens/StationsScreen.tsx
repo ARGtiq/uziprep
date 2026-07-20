@@ -15,10 +15,10 @@ interface Props {
   onGoExam: () => void;
   onOpenWeakSpots: () => void;
   onOpenMnemonics: () => void;
-  onOpenStats: () => void;
+  onOpenCharacter: () => void;
 }
 
-export function StationsScreen({ onOpenStation, onGoExam, onOpenWeakSpots, onOpenMnemonics, onOpenStats }: Props) {
+export function StationsScreen({ onOpenStation, onGoExam, onOpenWeakSpots, onOpenMnemonics, onOpenCharacter }: Props) {
   const streak = getStreak();
   const [filter, setFilter] = useState<(typeof CATS)[number]>('Все');
   const list = STATIONS.filter((s) => filter === 'Все' || s.category === filter);
@@ -69,7 +69,7 @@ export function StationsScreen({ onOpenStation, onGoExam, onOpenWeakSpots, onOpe
       <NextActionCard onOpenWeakSpots={onOpenWeakSpots} onOpenStation={onOpenStation} onGoExam={onGoExam} />
 
       <button
-        onClick={onOpenStats}
+        onClick={onOpenCharacter}
         className="mb-3 flex w-full items-center gap-3 rounded-m3-md bg-surface-container-low p-3.5 text-left"
       >
         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary-container text-on-primary-container">

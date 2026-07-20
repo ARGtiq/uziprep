@@ -33,6 +33,7 @@ const LS_KEYS_TO_BACKUP = [
   'uziprep.reminders.enabled',
   'uziprep.reminders.time',
   'uziprep.scenarioViewMode',
+  'uziprep.character',
 ];
 
 export async function exportBackup(): Promise<BackupData> {
