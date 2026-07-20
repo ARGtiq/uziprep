@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { StepItem } from '@/types/station';
 import { Icon } from '@/components/Icon';
+import { getTtsRate, resolveSelectedVoice } from '@/lib/ttsSettings';
 
 interface Props {
   steps: StepItem[];
@@ -66,15 +67,15 @@ export function AudioNarration({ steps }: Props) {
   }, []);
 
   async function pickVoice(): Promise<SpeechSynthesisVoice | null> {
-    const voices = await getVoicesWithRetry();
-    return voices.find((v) => v.lang.toLowerCase().startsWith('ru')) ?? null;
+    await getVoicesWithRetry(); // прогреваем список, чтобы resolveSelectedVoice не попал на пустой массив
+    return resolveSelectedVoice();
   }
 
   async function speakText(text: string, onDone?: () => void) {
     const voice = await pickVoice();
     const u = new SpeechSynthesisUtterance(text);
     u.lang = 'ru-RU';
-    u.rate = 0.95;
+    u.rate = getTtsRate();
     if (voice) u.voice = voice;
     u.onerror = (e) => setError(`Ошибка синтеза речи: ${e.error || 'неизвестная'}`);
     if (onDone) u.onend = onDone;
@@ -104,7 +105,7 @@ export function AudioNarration({ steps }: Props) {
     const utterances = steps.map((step, i) => {
       const u = new SpeechSynthesisUtterance(`${i + 1}. ${step.text}`);
       u.lang = 'ru-RU';
-      u.rate = 0.95;
+      u.rate = getTtsRate();
       if (voice) u.voice = voice;
       u.onstart = () => setCurrentIndex(i);
       u.onerror = (e) => {

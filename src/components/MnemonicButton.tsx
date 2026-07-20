@@ -15,11 +15,11 @@ interface Props {
 
 /**
  * Просит AI придумать короткую мнемонику/акроним для блока и
- * сохраняет результат в Dexie (по ключу станция+блок) — при
- * следующем заходе показывается сохранённая, а не теряется.
- * "Другой вариант" перезаписывает сохранённое новой генерацией.
- * Все сохранённые мнемоники доступны разом на отдельном экране
- * (см. screens/MnemonicsScreen.tsx).
+ * сохраняет результат в Dexie (по ключу станция+блок) — при следующем
+ * заходе показывается сохранённая, а не теряется. Спрятана под
+ * свёрнутый по умолчанию спойлер — не занимает место на странице,
+ * пока не открыл сам. Все сохранённые мнемоники доступны разом на
+ * отдельном экране (см. screens/MnemonicsScreen.tsx).
  */
 export function MnemonicButton({ stationId, stationTitle, blockName, itemTexts }: Props) {
   const key = `${stationId}::${blockName}`;
@@ -54,17 +54,33 @@ export function MnemonicButton({ stationId, stationTitle, blockName, itemTexts }
 
   if (!configured) return null;
 
+  if (mnemonic) {
+    return (
+      <details className="mb-2">
+        <summary className="cursor-pointer list-none text-xs font-semibold text-primary">
+          <span className="mr-1 inline-block [details[open]_&]:rotate-90">›</span>
+          Мнемоника
+        </summary>
+        <div className="mt-2 rounded-m3-md bg-secondary-container p-3 text-sm text-on-secondary-container">
+          {renderSimpleMarkdown(mnemonic)}
+          <button onClick={generate} disabled={loading} className="mt-2 block text-xs font-semibold text-primary underline disabled:opacity-50">
+            {loading ? 'Придумываю...' : 'Другой вариант'}
+          </button>
+        </div>
+      </details>
+    );
+  }
+
   return (
-    <div className="mb-4">
+    <div className="mb-2">
       <button
         onClick={generate}
         disabled={loading}
         className="flex items-center gap-1.5 rounded-full border border-outline-variant px-3 py-1.5 text-xs font-semibold disabled:opacity-50"
       >
         <Icon name="auto_awesome" size={14} />
-        {loading ? 'Придумываю...' : mnemonic ? 'Другой вариант' : 'Придумать мнемонику'}
+        {loading ? 'Придумываю...' : 'Придумать мнемонику'}
       </button>
-      {mnemonic && <div className="mt-2 rounded-m3-md bg-secondary-container p-3 text-sm text-on-secondary-container">{renderSimpleMarkdown(mnemonic)}</div>}
       {error && <div className="mt-2 text-xs text-error">{error}</div>}
     </div>
   );

@@ -20,6 +20,7 @@ import { DiagnosticsButton } from '@/components/DiagnosticsButton';
 import { askAiTutorOnce } from '@/lib/aiClient';
 import { exportBackup, downloadBackup, importBackup, type BackupData } from '@/lib/backup';
 import { getExamDate, setExamDate } from '@/lib/examDeadline';
+import { getTtsRate, setTtsRate, getTtsVoiceURI, setTtsVoiceURI, listAvailableVoices } from '@/lib/ttsSettings';
 import {
   isRemindersEnabled,
   setRemindersEnabled,
@@ -46,6 +47,26 @@ export function ProfileScreen() {
   const [extractingColor, setExtractingColor] = useState(false);
   const [backupMessage, setBackupMessage] = useState<string | null>(null);
   const [examDate, setExamDateState] = useState(() => getExamDate() ?? '');
+  const [ttsRate, setTtsRateState] = useState(getTtsRate);
+  const [ttsVoiceURI, setTtsVoiceURIState] = useState(() => getTtsVoiceURI() ?? '');
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+    const load = () => setVoices(listAvailableVoices());
+    load();
+    window.speechSynthesis.onvoiceschanged = load;
+  }, []);
+
+  function handleTtsRateChange(v: number) {
+    setTtsRateState(v);
+    setTtsRate(v);
+  }
+
+  function handleTtsVoiceChange(uri: string) {
+    setTtsVoiceURIState(uri);
+    setTtsVoiceURI(uri || null);
+  }
 
   function handleExamDateChange(value: string) {
     setExamDateState(value);
@@ -422,6 +443,43 @@ export function ProfileScreen() {
             ))}
           </div>
         </div>
+      </div>
+
+      <h2 className="mb-2 text-sm font-semibold text-on-surface-variant">Озвучка (TTS)</h2>
+      <div className="mb-4 rounded-m3-md bg-surface-container-low p-3.5">
+        <label className="mb-1 block text-xs text-on-surface-variant">Скорость: {ttsRate.toFixed(2)}×</label>
+        <input
+          type="range"
+          min={0.5}
+          max={1.5}
+          step={0.05}
+          value={ttsRate}
+          onChange={(e) => handleTtsRateChange(Number(e.target.value))}
+          className="w-full accent-[rgb(var(--m3-primary))]"
+        />
+
+        {voices.length > 0 ? (
+          <div className="mt-3">
+            <label className="mb-1 block text-xs text-on-surface-variant">Голос</label>
+            <select
+              value={ttsVoiceURI}
+              onChange={(e) => handleTtsVoiceChange(e.target.value)}
+              className="w-full rounded-m3-sm border border-outline-variant bg-surface px-3 py-2 text-sm"
+            >
+              <option value="">По умолчанию (первый русский)</option>
+              {voices.map((v) => (
+                <option key={v.voiceURI} value={v.voiceURI}>
+                  {v.name} ({v.lang})
+                </option>
+              ))}
+            </select>
+          </div>
+        ) : (
+          <p className="mt-3 text-xs text-on-surface-variant">
+            Голоса ещё не загружены или недоступны — список появится, когда движок синтеза речи будет готов
+            (обычно сразу после первого использования озвучки на вкладке "Полный план" любой станции).
+          </p>
+        )}
       </div>
 
       <h2 className="mb-2 text-sm font-semibold text-on-surface-variant">Дата экзамена</h2>
