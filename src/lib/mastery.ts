@@ -1,5 +1,6 @@
 import { db } from '@/lib/db';
 import { bumpLocalUpdatedAt } from '@/lib/localState';
+import { daysUntilExam } from '@/lib/examDeadline';
 
 /**
  * Упрощённый SM-2: для каждого блока станции (не отдельного пункта —
@@ -8,6 +9,11 @@ import { bumpLocalUpdatedAt } from '@/lib/localState';
  * проход блока (без ошибок) поднимает уровень и отодвигает повтор
  * экспоненциально дальше; ошибка — откатывает почти к нулю и просит
  * повторить уже завтра.
+ *
+ * Если задана дата экзамена (lib/examDeadline.ts) — "естественный"
+ * интервал сжимается пропорционально тому, сколько дней осталось.
+ * За 30 дней до экзамена интервал 14 дней не имеет смысла — экзамен
+ * наступит раньше, чем блок попросит повторения снова.
  */
 export interface BlockMastery {
   key: string; // `${stationId}::${scenarioName}::${blockName}`
@@ -21,6 +27,16 @@ export interface BlockMastery {
 }
 
 const INTERVALS_DAYS = [0, 1, 3, 7, 14, 30]; // индекс = level
+
+function effectiveIntervalDays(naturalDays: number): number {
+  const remaining = daysUntilExam();
+  if (remaining === null) return naturalDays;
+  // Сжимаем так, чтобы даже самый долгий "естественный" интервал (30
+  // дней) укладывался в оставшееся до экзамена время минимум дважды —
+  // иначе блок рискует не повториться вообще ни разу перед экзаменом.
+  const maxSensibleInterval = Math.max(1, Math.floor(remaining / 2));
+  return Math.min(naturalDays, maxSensibleInterval);
+}
 
 export function masteryKey(stationId: string, scenarioName: string, blockName: string): string {
   return `${stationId}::${scenarioName}::${blockName}`;
@@ -40,7 +56,7 @@ export async function recordBlockResult(
 ): Promise<BlockMastery> {
   const current = await getBlockMastery(stationId, scenarioName, blockName);
   const nextLevel = success ? Math.min(5, current.level + 1) : Math.max(0, current.level - 2);
-  const days = INTERVALS_DAYS[nextLevel];
+  const days = effectiveIntervalDays(INTERVALS_DAYS[nextLevel]);
   const next: BlockMastery = {
     ...current,
     level: nextLevel,

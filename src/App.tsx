@@ -17,6 +17,8 @@ import { touchStreak } from '@/lib/streakAndXp';
 import { shouldShowWarmup } from '@/lib/dailyWarmup';
 import { DailyWarmupModal } from '@/components/DailyWarmupModal';
 import { ChangelogModal, shouldShowChangelog, markChangelogSeen } from '@/components/ChangelogModal';
+import { OnboardingModal } from '@/components/OnboardingModal';
+import { hasSeenOnboarding } from '@/lib/onboarding';
 
 type StationsView =
   | { mode: 'list' }
@@ -36,6 +38,7 @@ export default function App() {
   const online = useOnlineStatus();
   const [showWarmup, setShowWarmup] = useState(false);
   const [showChangelog, setShowChangelog] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(() => !hasSeenOnboarding());
 
   useEffect(() => {
     touchStreak();
@@ -74,7 +77,8 @@ export default function App() {
   return (
     <div className="mx-auto flex min-h-screen max-w-[1100px]">
       <OfflineBanner />
-      {showChangelog && (
+      {showOnboarding && <OnboardingModal onDone={() => setShowOnboarding(false)} />}
+      {!showOnboarding && showChangelog && (
         <ChangelogModal
           onClose={() => {
             markChangelogSeen();
@@ -82,7 +86,7 @@ export default function App() {
           }}
         />
       )}
-      {!showChangelog && showWarmup && <DailyWarmupModal onClose={() => setShowWarmup(false)} />}
+      {!showOnboarding && !showChangelog && showWarmup && <DailyWarmupModal onClose={() => setShowWarmup(false)} />}
       <NavBar active={tab} onChange={changeTab} variant="rail" />
       <main className="min-w-0 flex-1 p-4 pb-24 md:p-6">
         {tab === 'stations' && stationsView.mode === 'detail' && (

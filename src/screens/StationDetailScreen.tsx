@@ -6,6 +6,9 @@ import { StepOrderingGame } from '@/components/StepOrderingGame';
 import { ScenarioComparisonView } from '@/components/ScenarioComparisonView';
 import { BlockAccordionTrainer } from '@/components/BlockAccordionTrainer';
 import { ZeroMistakeChallenge } from '@/components/ZeroMistakeChallenge';
+import { InterleavingTrainer } from '@/components/InterleavingTrainer';
+import { WhyThisStepButton } from '@/components/WhyThisStepButton';
+import { ProbePositionDiagram, findDiagramKey } from '@/components/ProbePositionDiagram';
 import { CoreThenDiffTrainer } from '@/components/CoreThenDiffTrainer';
 import { FindTheErrorTrainer } from '@/components/FindTheErrorTrainer';
 import { OcclusionTrainer } from '@/components/OcclusionTrainer';
@@ -16,7 +19,7 @@ import { Confetti } from '@/components/Confetti';
 import { Icon } from '@/components/Icon';
 
 type Tab = 'algo' | 'check' | 'order' | 'compare';
-type OrderMode = 'blocks' | 'core-diff' | 'find-error' | 'occlusion' | 'voice' | 'full' | 'challenge';
+type OrderMode = 'blocks' | 'core-diff' | 'find-error' | 'occlusion' | 'voice' | 'full' | 'challenge' | 'interleave';
 
 interface Props {
   stationId: string;
@@ -27,6 +30,7 @@ export function StationDetailScreen({ stationId, onBack }: Props) {
   const station = getStationById(stationId);
   const [tab, setTab] = useState<Tab>('algo');
   const [orderMode, setOrderMode] = useState<OrderMode>('blocks');
+  const [showModeSelector, setShowModeSelector] = useState(false);
   const [scenarioIndex, setScenarioIndex] = useState(0);
   const [checklistDone, setChecklistDone] = useState<Record<string, boolean>>({});
   const [showConfetti, setShowConfetti] = useState(false);
@@ -36,6 +40,7 @@ export function StationDetailScreen({ stationId, onBack }: Props) {
     setScenarioIndex(0);
     setTab('algo');
     setOrderMode('blocks');
+    setShowModeSelector(false);
   }, [stationId]);
 
   const scenarios = station?.scenarios;
@@ -130,18 +135,31 @@ export function StationDetailScreen({ stationId, onBack }: Props) {
             Пошаговый алгоритм дословно по паспорту станции — этот же порядок используется в тренировке.
           </p>
           <AudioNarration steps={flatStepItems} />
+          {activeScenario &&
+            findDiagramKey(activeScenario.name) &&
+            <ProbePositionDiagram diagramKey={findDiagramKey(activeScenario.name)!} />}
           {activeStepBlocks.map((block) => (
             <div key={block.block} className="mb-4">
               <div className="mb-1.5 flex items-center justify-between">
                 <h2 className="text-sm font-semibold text-on-surface-variant">{block.block}</h2>
                 <MnemonicButton stationId={stationId} stationTitle={station.title} blockName={block.block} itemTexts={block.items.map((i) => i.text)} />
               </div>
-              {block.items.map((step) => (
-                <div key={step.num} className="flex gap-3 border-b border-outline-variant py-3 last:border-none">
-                  <div className="flex h-[24px] w-[24px] shrink-0 items-center justify-center rounded-full bg-secondary-container text-[11px] font-semibold text-on-secondary-container">
-                    {step.num}
+              {block.items.map((step, i) => (
+                <div key={step.num} className="border-b border-outline-variant py-3 last:border-none">
+                  <div className="flex gap-3">
+                    <div className="flex h-[24px] w-[24px] shrink-0 items-center justify-center rounded-full bg-secondary-container text-[11px] font-semibold text-on-secondary-container">
+                      {step.num}
+                    </div>
+                    <p className="text-sm leading-relaxed">{step.text}</p>
                   </div>
-                  <p className="text-sm leading-relaxed">{step.text}</p>
+                  <div className="pl-9">
+                    <WhyThisStepButton
+                      stationTitle={station.title}
+                      stepText={step.text}
+                      prevStep={block.items[i - 1]?.text}
+                      nextStep={block.items[i + 1]?.text}
+                    />
+                  </div>
                 </div>
               ))}
             </div>
@@ -174,37 +192,50 @@ export function StationDetailScreen({ stationId, onBack }: Props) {
 
       {tab === 'order' && (
         <div>
-          <div className="mb-4 flex gap-2 overflow-x-auto pb-1">
-            {(
-              [
-                ['blocks', 'По блокам'],
-                ...(hasMultipleScenarios ? ([['core-diff', 'Ядро → отличия']] as [OrderMode, string][]) : []),
-                ['find-error', 'Найди ошибку'],
-                ['occlusion', 'Скрой и вспомни'],
-                ['voice', 'Расскажи вслух'],
-                ['challenge', 'Без права на ошибку'],
-                ['full', 'Всё целиком'],
-              ] as [OrderMode, string][]
-            ).map(([key, label]) => (
-              <button
-                key={key}
-                onClick={() => setOrderMode(key)}
-                className={`shrink-0 rounded-full border px-3 py-1.5 text-xs whitespace-nowrap ${
-                  orderMode === key
-                    ? 'border-transparent bg-primary-container font-semibold text-on-primary-container'
-                    : 'border-outline-variant text-on-surface-variant'
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
+          {!showModeSelector ? (
+            <button
+              onClick={() => setShowModeSelector(true)}
+              className="mb-4 flex items-center gap-1 text-xs font-semibold text-on-surface-variant"
+            >
+              Другие режимы <Icon name="keyboard_arrow_down" size={14} />
+            </button>
+          ) : (
+            <div className="mb-4 flex gap-2 overflow-x-auto pb-1">
+              {(
+                [
+                  ['blocks', 'По блокам'],
+                  ...(hasMultipleScenarios ? ([['core-diff', 'Ядро → отличия']] as [OrderMode, string][]) : []),
+                  ['interleave', 'Интерливинг'],
+                  ['find-error', 'Найди ошибку'],
+                  ['occlusion', 'Скрой и вспомни'],
+                  ['voice', 'Расскажи вслух'],
+                  ['challenge', 'Без права на ошибку'],
+                  ['full', 'Всё целиком'],
+                ] as [OrderMode, string][]
+              ).map(([key, label]) => (
+                <button
+                  key={key}
+                  onClick={() => setOrderMode(key)}
+                  className={`shrink-0 rounded-full border px-3 py-1.5 text-xs whitespace-nowrap ${
+                    orderMode === key
+                      ? 'border-transparent bg-primary-container font-semibold text-on-primary-container'
+                      : 'border-outline-variant text-on-surface-variant'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          )}
 
           {orderMode === 'blocks' && activeStepBlocks.length > 0 && (
             <BlockAccordionTrainer key={activeScenario?.name} stationId={stationId} scenarioName={activeScenario?.name ?? 'default'} blocks={activeStepBlocks} />
           )}
           {orderMode === 'core-diff' && hasMultipleScenarios && (
             <CoreThenDiffTrainer stationId={stationId} scenarios={scenarios!} />
+          )}
+          {orderMode === 'interleave' && (
+            <InterleavingTrainer excludeStationId={stationId} />
           )}
           {orderMode === 'find-error' && flatStepItems.length > 0 && (
             <FindTheErrorTrainer key={activeScenario?.name} steps={flatStepItems} />

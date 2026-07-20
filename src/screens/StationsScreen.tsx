@@ -6,7 +6,7 @@ import { Icon } from '@/components/Icon';
 import { IconBadge } from '@/components/IconBadge';
 import { db } from '@/lib/db';
 import { getStreak, getStationXp, levelForXp, getAllXp } from '@/lib/streakAndXp';
-import { TodayReviewWidget } from '@/components/TodayReviewWidget';
+import { NextActionCard } from '@/components/NextActionCard';
 
 const CATS: Array<StationCategory | 'Все'> = ['Все', 'УЗИ', 'Неотложная помощь', 'Общие навыки'];
 
@@ -66,7 +66,7 @@ export function StationsScreen({ onOpenStation, onGoExam, onOpenWeakSpots, onOpe
         </button>
       </div>
 
-      <TodayReviewWidget onOpen={onOpenWeakSpots} />
+      <NextActionCard onOpenWeakSpots={onOpenWeakSpots} onOpenStation={onOpenStation} onGoExam={onGoExam} />
 
       <button
         onClick={onOpenStats}

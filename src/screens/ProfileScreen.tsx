@@ -19,6 +19,7 @@ import { getSupabaseSettings, saveSupabaseSettings, clearSupabaseSettings, getSu
 import { DiagnosticsButton } from '@/components/DiagnosticsButton';
 import { askAiTutorOnce } from '@/lib/aiClient';
 import { exportBackup, downloadBackup, importBackup, type BackupData } from '@/lib/backup';
+import { getExamDate, setExamDate } from '@/lib/examDeadline';
 
 export function ProfileScreen() {
   const { preference, setPreference, seedHex, setSeedHex, sourceKey, setSourceKey, colorfulIcons, setColorfulIcons } = useTheme();
@@ -37,6 +38,12 @@ export function ProfileScreen() {
   const [aiSaved, setAiSaved] = useState(false);
   const [extractingColor, setExtractingColor] = useState(false);
   const [backupMessage, setBackupMessage] = useState<string | null>(null);
+  const [examDate, setExamDateState] = useState(() => getExamDate() ?? '');
+
+  function handleExamDateChange(value: string) {
+    setExamDateState(value);
+    setExamDate(value || null);
+  }
 
   async function handleExportBackup() {
     const data = await exportBackup();
@@ -374,6 +381,25 @@ export function ProfileScreen() {
             <div className={`h-5 w-5 rounded-full bg-surface transition-transform ${colorfulIcons ? 'translate-x-5' : 'translate-x-0.5'}`} />
           </button>
         </div>
+      </div>
+
+      <h2 className="mb-2 text-sm font-semibold text-on-surface-variant">Дата экзамена</h2>
+      <div className="mb-4 rounded-m3-md bg-surface-container-low p-3.5">
+        <p className="mb-3 text-xs text-on-surface-variant">
+          Если задать дату — интервалы повторения в тренировке "По блокам" автоматически сжимаются по мере
+          приближения экзамена, чтобы каждый блок гарантированно успел повториться хотя бы пару раз.
+        </p>
+        <input
+          type="date"
+          value={examDate}
+          onChange={(e) => handleExamDateChange(e.target.value)}
+          className="w-full rounded-m3-sm border border-outline-variant bg-surface px-3 py-2 text-sm"
+        />
+        {examDate && (
+          <button onClick={() => handleExamDateChange('')} className="mt-2 text-xs text-error underline">
+            Убрать дату
+          </button>
+        )}
       </div>
 
       <h2 className="mb-2 text-sm font-semibold text-on-surface-variant">Напоминания</h2>
