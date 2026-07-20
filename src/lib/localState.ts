@@ -38,6 +38,7 @@ export interface MiscStateBlob {
   bestTimes: unknown[];
   questionStats: unknown[];
   mnemonics: unknown[];
+  whyExplanations: unknown[];
   updatedAt: number;
 }
 
@@ -47,8 +48,9 @@ export async function exportLocalState(): Promise<MiscStateBlob> {
   const mastery = await db.blockMastery.toArray();
   const questionStats = await db.questionStats.toArray();
   const mnemonics = await db.mnemonics.toArray();
+  const whyExplanations = await db.whyExplanations.toArray();
   const bestTimes = await getAllBestTimesRaw();
-  return { streak, xp, mastery, bestTimes, questionStats, mnemonics, updatedAt: getLocalUpdatedAt() };
+  return { streak, xp, mastery, bestTimes, questionStats, mnemonics, whyExplanations, updatedAt: getLocalUpdatedAt() };
 }
 
 export async function importLocalState(blob: Omit<MiscStateBlob, 'updatedAt'>) {
@@ -68,6 +70,11 @@ export async function importLocalState(blob: Omit<MiscStateBlob, 'updatedAt'>) {
   if (Array.isArray(blob.mnemonics) && blob.mnemonics.length) {
     // @ts-expect-error — то же самое
     await db.mnemonics.bulkPut(blob.mnemonics);
+  }
+  await db.whyExplanations.clear();
+  if (Array.isArray(blob.whyExplanations) && blob.whyExplanations.length) {
+    // @ts-expect-error — то же самое
+    await db.whyExplanations.bulkPut(blob.whyExplanations);
   }
   await setAllBestTimesRaw(blob.bestTimes);
 }

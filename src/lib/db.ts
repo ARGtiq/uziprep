@@ -45,6 +45,13 @@ export interface SavedMnemonic {
   updatedAt: number;
 }
 
+export interface SavedWhyExplanation {
+  key: string; // `${stationId}::${blockName}::${stepNum}`
+  stationId: string;
+  text: string;
+  updatedAt: number;
+}
+
 export class UziPrepDB extends Dexie {
   progress!: Table<StationProgress, string>;
   syncQueue!: Table<SyncQueueItem, number>;
@@ -53,6 +60,7 @@ export class UziPrepDB extends Dexie {
   blockMastery!: Table<BlockMastery, string>;
   questionStats!: Table<QuestionStat, string>;
   mnemonics!: Table<SavedMnemonic, string>;
+  whyExplanations!: Table<SavedWhyExplanation, string>;
 
   constructor() {
     super('uziprep');
@@ -89,6 +97,20 @@ export class UziPrepDB extends Dexie {
       blockMastery: 'key, stationId, dueAt, level',
       questionStats: 'questionId, wrongCount',
       mnemonics: 'key, stationId',
+    });
+    // v6: у mnemonics не было индекса по updatedAt, а MnemonicsScreen
+    // делал orderBy('updatedAt') — Dexie требует индекс для orderBy,
+    // без него бросает ошибку и роняет экран в белый (нет ErrorBoundary).
+    // Заодно добавлена таблица под сохранённые объяснения "Почему так".
+    this.version(6).stores({
+      progress: 'stationId',
+      syncQueue: '++id, synced',
+      chatMessages: '++id, threadKey, createdAt',
+      examAttempts: '++id, synced, finishedAt',
+      blockMastery: 'key, stationId, dueAt, level',
+      questionStats: 'questionId, wrongCount',
+      mnemonics: 'key, stationId, updatedAt',
+      whyExplanations: 'key, stationId',
     });
   }
 }

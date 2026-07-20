@@ -84,6 +84,7 @@ interface MiscRemoteRow {
   best_times: unknown[];
   question_stats: unknown[];
   mnemonics: unknown[];
+  why_explanations: unknown[];
   updated_at: string;
 }
 
@@ -109,6 +110,7 @@ export async function pushMiscState(userId: string) {
       best_times: state.bestTimes,
       question_stats: state.questionStats,
       mnemonics: state.mnemonics,
+      why_explanations: state.whyExplanations,
       updated_at: new Date(state.updatedAt).toISOString(),
     },
     { onConflict: 'user_id' },
@@ -133,6 +135,7 @@ export async function pullMiscState(userId: string) {
       bestTimes: row.best_times ?? [],
       questionStats: row.question_stats ?? [],
       mnemonics: row.mnemonics ?? [],
+      whyExplanations: row.why_explanations ?? [],
     });
     markSyncedNow(remoteUpdatedAt);
   }

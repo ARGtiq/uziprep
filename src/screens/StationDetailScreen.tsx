@@ -16,6 +16,7 @@ import { MnemonicButton } from '@/components/MnemonicButton';
 import { AudioNarration } from '@/components/AudioNarration';
 import { Confetti } from '@/components/Confetti';
 import { Icon } from '@/components/Icon';
+import { getScenarioViewMode, setScenarioViewMode, type ScenarioViewMode } from '@/lib/scenarioViewMode';
 
 type Tab = 'algo' | 'check' | 'order' | 'compare';
 type OrderMode = 'blocks' | 'core-diff' | 'find-error' | 'occlusion' | 'voice' | 'full' | 'challenge' | 'interleave';
@@ -33,6 +34,15 @@ export function StationDetailScreen({ stationId, onBack }: Props) {
   const [scenarioIndex, setScenarioIndex] = useState(0);
   const [checklistDone, setChecklistDone] = useState<Record<string, boolean>>({});
   const [showConfetti, setShowConfetti] = useState(false);
+  const [viewMode, setViewMode] = useState<ScenarioViewMode>(getScenarioViewMode);
+  const [gridConfirmed, setGridConfirmed] = useState(false);
+
+  function toggleViewMode() {
+    const next: ScenarioViewMode = viewMode === 'inline' ? 'grid' : 'inline';
+    setViewMode(next);
+    setScenarioViewMode(next); // сохраняется глобально, применяется на все станции приложения
+    setGridConfirmed(false);
+  }
 
   useEffect(() => {
     getProgress(stationId).then((p) => setChecklistDone(p.checklistDone));
@@ -40,6 +50,7 @@ export function StationDetailScreen({ stationId, onBack }: Props) {
     setTab('algo');
     setOrderMode('blocks');
     setShowModeSelector(false);
+    setGridConfirmed(false);
   }, [stationId]);
 
   const scenarios = station?.scenarios;
@@ -77,34 +88,77 @@ export function StationDetailScreen({ stationId, onBack }: Props) {
         <button onClick={onBack} aria-label="Назад" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-container">
           <Icon name="arrow_back" size={18} />
         </button>
-        <div>
+        <div className="flex-1">
           <div className="text-xs font-semibold uppercase tracking-wide text-primary">{station.category}</div>
           <h1 className="text-xl font-semibold">{station.title}</h1>
         </div>
+        {hasMultipleScenarios && (
+          <button
+            onClick={toggleViewMode}
+            aria-label="Переключить вид списка сценариев"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-container text-on-surface-variant"
+            title={viewMode === 'inline' ? 'Показать сеткой с иконками' : 'Показать списком'}
+          >
+            <Icon name={viewMode === 'inline' ? 'grid_view' : 'compare'} size={16} />
+          </button>
+        )}
       </div>
 
-      {hasMultipleScenarios && (
-        <div className="mb-4">
-          <div className="mb-1.5 text-xs text-on-surface-variant">
-            Сценарий станции (определяется в день экзамена — можно потренировать любой):
-          </div>
-          <div className="flex gap-2 overflow-x-auto pb-1">
+      {hasMultipleScenarios && viewMode === 'grid' && !gridConfirmed ? (
+        <div>
+          <p className="mb-3 text-xs text-on-surface-variant">Выбери сценарий станции — определяется в день экзамена, можно потренировать любой.</p>
+          <div className="grid grid-cols-2 gap-2.5">
             {scenarios!.map((sc, i) => (
               <button
                 key={sc.name}
-                onClick={() => setScenarioIndex(i)}
-                className={`shrink-0 rounded-full border px-3 py-1.5 text-xs whitespace-nowrap ${
-                  scenarioIndex === i
-                    ? 'border-transparent bg-primary-container font-semibold text-on-primary-container'
-                    : 'border-outline-variant text-on-surface-variant'
-                }`}
+                onClick={() => {
+                  setScenarioIndex(i);
+                  setGridConfirmed(true);
+                }}
+                className="flex flex-col items-center gap-2 rounded-m3-md bg-surface-container-low p-4 text-center"
               >
-                {sc.name}
+                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-container text-on-primary-container">
+                  <Icon name={station.icon as any} size={22} />
+                </span>
+                <span className="text-xs font-medium leading-snug">{sc.name}</span>
               </button>
             ))}
           </div>
         </div>
-      )}
+      ) : (
+        <>
+          {hasMultipleScenarios && viewMode === 'grid' && gridConfirmed && (
+            <button onClick={() => setGridConfirmed(false)} className="mb-3 flex items-center gap-1 text-xs font-semibold text-on-surface-variant">
+              <Icon name="arrow_back" size={14} /> Все сценарии
+            </button>
+          )}
+
+          {hasMultipleScenarios && viewMode === 'inline' && (
+            <div className="mb-4">
+              <div className="mb-1.5 text-xs text-on-surface-variant">
+                Сценарий станции (определяется в день экзамена — можно потренировать любой):
+              </div>
+              <div className="flex gap-2 overflow-x-auto pb-1">
+                {scenarios!.map((sc, i) => (
+                  <button
+                    key={sc.name}
+                    onClick={() => setScenarioIndex(i)}
+                    className={`shrink-0 rounded-full border px-3 py-1.5 text-xs whitespace-nowrap ${
+                      scenarioIndex === i
+                        ? 'border-transparent bg-primary-container font-semibold text-on-primary-container'
+                        : 'border-outline-variant text-on-surface-variant'
+                    }`}
+                  >
+                    {sc.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {hasMultipleScenarios && viewMode === 'grid' && gridConfirmed && (
+            <h2 className="mb-3 text-sm font-semibold text-primary">{activeScenario?.name}</h2>
+          )}
 
       <div className="mb-4 flex gap-4 overflow-x-auto border-b border-outline-variant">
         {(
@@ -150,7 +204,10 @@ export function StationDetailScreen({ stationId, onBack }: Props) {
                   </div>
                   <div className="pl-9">
                     <WhyThisStepButton
+                      stationId={stationId}
                       stationTitle={station.title}
+                      blockName={block.block}
+                      stepNum={step.num}
                       stepText={step.text}
                       prevStep={block.items[i - 1]?.text}
                       nextStep={block.items[i + 1]?.text}
@@ -254,6 +311,8 @@ export function StationDetailScreen({ stationId, onBack }: Props) {
             />
           )}
         </div>
+      )}
+        </>
       )}
     </div>
   );

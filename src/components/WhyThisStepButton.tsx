@@ -1,10 +1,16 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { askAiTutorOnce } from '@/lib/aiClient';
 import { isAiConfigured } from '@/lib/aiSettings';
+import { db } from '@/lib/db';
+import { bumpLocalUpdatedAt } from '@/lib/localState';
 import { Icon } from '@/components/Icon';
+import { renderSimpleMarkdown } from '@/lib/simpleMarkdown';
 
 interface Props {
+  stationId: string;
   stationTitle: string;
+  blockName: string;
+  stepNum: string;
   stepText: string;
   prevStep?: string;
   nextStep?: string;
@@ -12,20 +18,23 @@ interface Props {
 
 /**
  * "Почему именно так?" — объясняет логику шага, а не просто порядок.
- * Тренировки в приложении учат ПОСЛЕДОВАТЕЛЬНОСТИ, но не пониманию
- * причины — а осмысленное объяснение запоминается надёжнее голого
- * заучивания порядка (elaborative interrogation).
+ * Результат сохраняется в Dexie (как и мнемоники) — при повторном
+ * визите сразу виден в свёрнутом спойлере, не нужно спрашивать заново
+ * и ждать AI. Спойлер по умолчанию закрыт, чтобы не загромождать
+ * список шагов текстом на каждом заходе.
  */
-export function WhyThisStepButton({ stationTitle, stepText, prevStep, nextStep }: Props) {
-  const [expanded, setExpanded] = useState(false);
-  const [answer, setAnswer] = useState<string | null>(null);
+export function WhyThisStepButton({ stationId, stationTitle, blockName, stepNum, stepText, prevStep, nextStep }: Props) {
+  const key = `${stationId}::${blockName}::${stepNum}`;
+  const [saved, setSaved] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const configured = isAiConfigured();
 
+  useEffect(() => {
+    db.whyExplanations.get(key).then((row) => setSaved(row?.text ?? null));
+  }, [key]);
+
   async function ask() {
-    setExpanded(true);
-    if (answer) return; // уже спрашивали — не дублируем запрос
     setLoading(true);
     setError(null);
     try {
@@ -35,7 +44,9 @@ export function WhyThisStepButton({ stationTitle, stepText, prevStep, nextStep }
         `Кратко (2-4 предложения) объясни, ПОЧЕМУ этот шаг выполняется именно на этом месте в последовательности ` +
         `и что будет, если его пропустить или переставить — не пересказывай сам шаг, а объясни логику.`;
       const reply = await askAiTutorOnce(prompt);
-      setAnswer(reply);
+      setSaved(reply);
+      await db.whyExplanations.put({ key, stationId, text: reply, updatedAt: Date.now() });
+      bumpLocalUpdatedAt();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Не удалось получить объяснение');
     } finally {
@@ -45,14 +56,30 @@ export function WhyThisStepButton({ stationTitle, stepText, prevStep, nextStep }
 
   if (!configured) return null;
 
+  if (saved) {
+    return (
+      <details className="mt-1">
+        <summary className="cursor-pointer list-none text-xs text-primary">
+          <span className="mr-1 inline-block [details[open]_&]:rotate-90">›</span>
+          Почему именно так?
+        </summary>
+        <div className="mt-1.5 rounded-m3-md bg-secondary-container p-2.5 text-xs leading-relaxed text-on-secondary-container">
+          {renderSimpleMarkdown(saved)}
+          <button onClick={ask} disabled={loading} className="mt-1.5 block text-[11px] font-semibold text-primary underline disabled:opacity-50">
+            {loading ? 'Думаю...' : 'Спросить другой вариант'}
+          </button>
+        </div>
+      </details>
+    );
+  }
+
   return (
     <div className="mt-1">
-      <button onClick={ask} className="flex items-center gap-1 text-xs text-primary">
+      <button onClick={ask} disabled={loading} className="flex items-center gap-1 text-xs text-primary disabled:opacity-50">
         <Icon name="auto_awesome" size={12} />
         {loading ? 'Думаю...' : 'Почему именно так?'}
       </button>
-      {expanded && answer && <p className="mt-1.5 rounded-m3-md bg-secondary-container p-2.5 text-xs leading-relaxed text-on-secondary-container">{answer}</p>}
-      {expanded && error && <p className="mt-1.5 text-xs text-error">{error}</p>}
+      {error && <p className="mt-1.5 text-xs text-error">{error}</p>}
     </div>
   );
 }

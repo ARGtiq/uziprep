@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { OfflineReadyIndicator } from '@/components/OfflineReadyIndicator';
 import { forceHardUpdate } from '@/lib/forceUpdate';
 import { APP_VERSION } from '@/version';
-import { useTheme } from '@/theme/ThemeProvider';
+import { useTheme, FONT_SCALE_PERCENT, type FontScale } from '@/theme/ThemeProvider';
 import { useAuth } from '@/lib/useAuth';
 import { fullSync } from '@/lib/sync';
 import { Icon } from '@/components/Icon';
@@ -29,7 +29,7 @@ import {
 } from '@/lib/reminders';
 
 export function ProfileScreen() {
-  const { preference, setPreference, seedHex, setSeedHex, sourceKey, setSourceKey, colorfulIcons, setColorfulIcons } = useTheme();
+  const { preference, setPreference, seedHex, setSeedHex, sourceKey, setSourceKey, colorfulIcons, setColorfulIcons, fontScale, setFontScale } = useTheme();
   const { session, loading, configured, authError, signInWithEmail, resendMagicLink, signOut } = useAuth();
   const [email, setEmail] = useState('');
   const [sentTo, setSentTo] = useState<string | null>(null);
@@ -400,6 +400,29 @@ export function ProfileScreen() {
             <div className={`h-5 w-5 rounded-full bg-surface transition-transform ${colorfulIcons ? 'translate-x-5' : 'translate-x-0.5'}`} />
           </button>
         </div>
+
+        <div className="mt-3 border-t border-outline-variant pt-3">
+          <span className="text-sm">Размер шрифта</span>
+          <div className="mt-2 flex gap-1 rounded-full bg-surface-container p-0.5">
+            {([
+              ['sm', '85%'],
+              ['md', '100%'],
+              ['lg', '112%'],
+              ['xl', '125%'],
+            ] as [FontScale, string][]).map(([s, sizeLabel]) => (
+              <button
+                key={s}
+                onClick={() => setFontScale(s)}
+                className={`flex-1 rounded-full py-2 font-semibold ${fontScale === s ? 'bg-primary text-on-primary' : 'text-on-surface-variant'}`}
+                style={{ fontSize: `${10 + FONT_SCALE_PERCENT[s] / 12.5}px` }}
+                aria-label={`Шрифт ${sizeLabel}`}
+              >
+                А
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
       </div>
 
       <h2 className="mb-2 text-sm font-semibold text-on-surface-variant">Дата экзамена</h2>

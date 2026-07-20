@@ -4,6 +4,7 @@ import { isAiConfigured } from '@/lib/aiSettings';
 import { db } from '@/lib/db';
 import { bumpLocalUpdatedAt } from '@/lib/localState';
 import { Icon } from '@/components/Icon';
+import { renderSimpleMarkdown } from '@/lib/simpleMarkdown';
 
 interface Props {
   stationId: string;
@@ -63,7 +64,7 @@ export function MnemonicButton({ stationId, stationTitle, blockName, itemTexts }
         <Icon name="auto_awesome" size={14} />
         {loading ? 'Придумываю...' : mnemonic ? 'Другой вариант' : 'Придумать мнемонику'}
       </button>
-      {mnemonic && <div className="mt-2 rounded-m3-md bg-secondary-container p-3 text-sm text-on-secondary-container">{mnemonic}</div>}
+      {mnemonic && <div className="mt-2 rounded-m3-md bg-secondary-container p-3 text-sm text-on-secondary-container">{renderSimpleMarkdown(mnemonic)}</div>}
       {error && <div className="mt-2 text-xs text-error">{error}</div>}
     </div>
   );

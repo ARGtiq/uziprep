@@ -1,6 +1,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db, type SavedMnemonic } from '@/lib/db';
 import { Icon } from '@/components/Icon';
+import { renderSimpleMarkdown } from '@/lib/simpleMarkdown';
 
 interface Props {
   onBack: () => void;
@@ -40,7 +41,7 @@ export function MnemonicsScreen({ onBack, onOpenStation }: Props) {
           {items.map((m) => (
             <div key={m.key} className="mb-2 rounded-m3-md bg-surface-container-low p-3">
               <div className="mb-1 text-xs font-medium text-on-surface-variant">{m.blockName}</div>
-              <div className="text-sm leading-relaxed">{m.text}</div>
+              <div className="text-sm leading-relaxed">{renderSimpleMarkdown(m.text)}</div>
             </div>
           ))}
         </div>

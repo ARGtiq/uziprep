@@ -95,11 +95,13 @@ create table if not exists public.misc_state (
   best_times jsonb not null default '[]'::jsonb,
   question_stats jsonb not null default '[]'::jsonb,
   mnemonics jsonb not null default '[]'::jsonb,
+  why_explanations jsonb not null default '[]'::jsonb,
   updated_at timestamptz not null default now()
 );
 
 alter table public.misc_state add column if not exists question_stats jsonb not null default '[]'::jsonb;
 alter table public.misc_state add column if not exists mnemonics jsonb not null default '[]'::jsonb;
+alter table public.misc_state add column if not exists why_explanations jsonb not null default '[]'::jsonb;
 
 alter table public.misc_state enable row level security;
 
