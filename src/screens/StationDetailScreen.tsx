@@ -8,7 +8,6 @@ import { BlockAccordionTrainer } from '@/components/BlockAccordionTrainer';
 import { ZeroMistakeChallenge } from '@/components/ZeroMistakeChallenge';
 import { InterleavingTrainer } from '@/components/InterleavingTrainer';
 import { WhyThisStepButton } from '@/components/WhyThisStepButton';
-import { ProbePositionDiagram, findDiagramKey } from '@/components/ProbePositionDiagram';
 import { CoreThenDiffTrainer } from '@/components/CoreThenDiffTrainer';
 import { FindTheErrorTrainer } from '@/components/FindTheErrorTrainer';
 import { OcclusionTrainer } from '@/components/OcclusionTrainer';
@@ -135,9 +134,6 @@ export function StationDetailScreen({ stationId, onBack }: Props) {
             Пошаговый алгоритм дословно по паспорту станции — этот же порядок используется в тренировке.
           </p>
           <AudioNarration steps={flatStepItems} />
-          {activeScenario &&
-            findDiagramKey(activeScenario.name) &&
-            <ProbePositionDiagram diagramKey={findDiagramKey(activeScenario.name)!} />}
           {activeStepBlocks.map((block) => (
             <div key={block.block} className="mb-4">
               <div className="mb-1.5 flex items-center justify-between">

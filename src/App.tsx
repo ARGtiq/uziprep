@@ -19,6 +19,7 @@ import { DailyWarmupModal } from '@/components/DailyWarmupModal';
 import { ChangelogModal, shouldShowChangelog, markChangelogSeen } from '@/components/ChangelogModal';
 import { OnboardingModal } from '@/components/OnboardingModal';
 import { hasSeenOnboarding } from '@/lib/onboarding';
+import { checkAndNotify } from '@/lib/reminders';
 
 type StationsView =
   | { mode: 'list' }
@@ -42,9 +43,20 @@ export default function App() {
 
   useEffect(() => {
     touchStreak();
-    if (shouldShowWarmup()) setShowWarmup(true);
+    // В самую первую сессию (онбординг) разминку не показываем —
+    // человек ещё даже не понял, что это за приложение, а мы уже
+    // грузим его вопросами. shouldShowWarmup() при этом НЕ помечаем
+    // "уже показано", чтобы разминка нормально появилась завтра.
+    if (!showOnboarding && shouldShowWarmup()) setShowWarmup(true);
     if (shouldShowChangelog()) setShowChangelog(true);
     else if (!localStorage.getItem('uziprep.lastSeenVersion')) markChangelogSeen(); // первая установка — просто запоминаем версию
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    checkAndNotify();
+    const interval = setInterval(checkAndNotify, 15 * 60 * 1000);
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {

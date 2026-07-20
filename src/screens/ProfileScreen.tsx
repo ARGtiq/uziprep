@@ -20,6 +20,13 @@ import { DiagnosticsButton } from '@/components/DiagnosticsButton';
 import { askAiTutorOnce } from '@/lib/aiClient';
 import { exportBackup, downloadBackup, importBackup, type BackupData } from '@/lib/backup';
 import { getExamDate, setExamDate } from '@/lib/examDeadline';
+import {
+  isRemindersEnabled,
+  setRemindersEnabled,
+  getReminderTime,
+  setReminderTime as setReminderTimeStorage,
+  tryRegisterPeriodicSync,
+} from '@/lib/reminders';
 
 export function ProfileScreen() {
   const { preference, setPreference, seedHex, setSeedHex, sourceKey, setSourceKey, colorfulIcons, setColorfulIcons } = useTheme();
@@ -64,18 +71,30 @@ export function ProfileScreen() {
       setBackupMessage('Не удалось прочитать файл — убедись, что это бэкап, экспортированный отсюда же.');
     }
   }
-  const [notifEnabled, setNotifEnabled] = useState(
-    () => typeof Notification !== 'undefined' && Notification.permission === 'granted',
-  );
+  const [notifEnabled, setNotifEnabled] = useState(() => isRemindersEnabled() && typeof Notification !== 'undefined' && Notification.permission === 'granted');
+  const [reminderTime, setReminderTime] = useState(getReminderTime());
+  const [periodicSyncOk, setPeriodicSyncOk] = useState<boolean | null>(null);
 
   async function handleToggleNotifications(e: React.ChangeEvent<HTMLInputElement>) {
     const checked = e.target.checked;
     if (!checked || typeof Notification === 'undefined') {
       setNotifEnabled(false);
+      setRemindersEnabled(false);
       return;
     }
     const permission = await Notification.requestPermission();
-    setNotifEnabled(permission === 'granted');
+    const granted = permission === 'granted';
+    setNotifEnabled(granted);
+    setRemindersEnabled(granted);
+    if (granted) {
+      const ok = await tryRegisterPeriodicSync();
+      setPeriodicSyncOk(ok);
+    }
+  }
+
+  function handleReminderTimeChange(value: string) {
+    setReminderTime(value);
+    setReminderTimeStorage(value);
   }
   const [sbUrl, setSbUrl] = useState('');
   const [sbAnonKey, setSbAnonKey] = useState('');
@@ -407,7 +426,7 @@ export function ProfileScreen() {
         <label className="flex items-center justify-between">
           <div>
             <span className="text-sm">Напоминать тренироваться</span>
-            <div className="text-xs text-on-surface-variant">Пока только запрос разрешения — само планирование напоминаний добавим позже</div>
+            <div className="text-xs text-on-surface-variant">Если сегодня ещё не тренировался — покажет уведомление после указанного времени</div>
           </div>
           <input
             type="checkbox"
@@ -416,6 +435,26 @@ export function ProfileScreen() {
             className="h-5 w-5 shrink-0 accent-[rgb(var(--m3-primary))]"
           />
         </label>
+
+        {notifEnabled && (
+          <div className="mt-3 border-t border-outline-variant pt-3">
+            <label className="mb-1 block text-xs text-on-surface-variant">Время напоминания</label>
+            <input
+              type="time"
+              value={reminderTime}
+              onChange={(e) => handleReminderTimeChange(e.target.value)}
+              className="w-full rounded-m3-sm border border-outline-variant bg-surface px-3 py-2 text-sm"
+            />
+          </div>
+        )}
+
+        <p className="mt-3 text-[11px] leading-relaxed text-on-surface-variant">
+          Честно: без сервера настоящие фоновые пуш-уведомления (когда приложение полностью закрыто) невозможны —
+          для этого нужен бэкенд, который их отправляет, это вне объёма проекта. Уведомление сработает, если
+          открыть приложение (хотя бы вкладку в фоне) после указанного времени.
+          {periodicSyncOk === true && ' Дополнительно включена попытка фоновой синхронизации (Chrome/Android) — может сработать и без открытой вкладки, но не гарантированно.'}
+          {periodicSyncOk === false && ' Фоновая синхронизация недоступна в этом браузере — сработает только при открытом приложении.'}
+        </p>
       </div>
 
       <h2 className="mb-2 text-sm font-semibold text-on-surface-variant">AI-репетитор</h2>
