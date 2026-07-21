@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
 import { askAiTutorOnce } from '@/lib/aiClient';
 import { isAiConfigured } from '@/lib/aiSettings';
-import { db } from '@/lib/db';
-import { bumpLocalUpdatedAt } from '@/lib/localState';
+import { getLatestMnemonic, saveMnemonicVersion } from '@/lib/mnemonics';
 import { Icon } from '@/components/Icon';
 import { renderSimpleMarkdown } from '@/lib/simpleMarkdown';
 
@@ -14,23 +13,21 @@ interface Props {
 }
 
 /**
- * Просит AI придумать короткую мнемонику/акроним для блока и
- * сохраняет результат в Dexie (по ключу станция+блок) — при следующем
- * заходе показывается сохранённая, а не теряется. Спрятана под
- * свёрнутый по умолчанию спойлер — не занимает место на странице,
- * пока не открыл сам. Все сохранённые мнемоники доступны разом на
- * отдельном экране (см. screens/MnemonicsScreen.tsx).
+ * Просит AI придумать короткую мнемонику/акроним для блока. Каждая
+ * генерация сохраняется как НОВАЯ версия (см. lib/mnemonics.ts) — тут
+ * показывается только последняя, вся история — на отдельном экране
+ * "Мои мнемоники" (там же удаление и редактирование своим промптом).
+ * Спрятана под свёрнутый по умолчанию спойлер.
  */
 export function MnemonicButton({ stationId, stationTitle, blockName, itemTexts }: Props) {
-  const key = `${stationId}::${blockName}`;
   const [mnemonic, setMnemonic] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const configured = isAiConfigured();
 
   useEffect(() => {
-    db.mnemonics.get(key).then((saved) => setMnemonic(saved?.text ?? null));
-  }, [key]);
+    getLatestMnemonic(stationId, blockName).then((saved) => setMnemonic(saved?.text ?? null));
+  }, [stationId, blockName]);
 
   async function generate() {
     setLoading(true);
@@ -43,8 +40,7 @@ export function MnemonicButton({ stationId, stationTitle, blockName, itemTexts }
         itemTexts.map((t, i) => `${i + 1}. ${t}`).join('\n');
       const reply = await askAiTutorOnce(prompt);
       setMnemonic(reply);
-      await db.mnemonics.put({ key, stationId, stationTitle, blockName, text: reply, updatedAt: Date.now() });
-      bumpLocalUpdatedAt();
+      await saveMnemonicVersion(stationId, stationTitle, blockName, reply);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Не удалось сгенерировать');
     } finally {
@@ -64,7 +60,7 @@ export function MnemonicButton({ stationId, stationTitle, blockName, itemTexts }
         <div className="mt-2 rounded-m3-md bg-secondary-container p-3 text-sm text-on-secondary-container">
           {renderSimpleMarkdown(mnemonic)}
           <button onClick={generate} disabled={loading} className="mt-2 block text-xs font-semibold text-primary underline disabled:opacity-50">
-            {loading ? 'Придумываю...' : 'Другой вариант'}
+            {loading ? 'Придумываю...' : 'Другой вариант (сохранится отдельно)'}
           </button>
         </div>
       </details>

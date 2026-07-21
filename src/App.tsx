@@ -61,6 +61,28 @@ export default function App() {
     return () => clearInterval(interval);
   }, []);
 
+  // Раньше переход на "Станция" / "Слабые места" / "Мнемоники" и т.д.
+  // никак не трогал историю браузера — аппаратная/жестовая кнопка
+  // "назад" на телефоне не находила, куда вернуться внутри приложения,
+  // и просто закрывала вкладку/приложение целиком. Теперь при входе в
+  // любой такой подэкран кладём запись в историю, а popstate (когда
+  // юзер жмёт системную "назад") перехватываем и возвращаем в список
+  // станций вместо выхода из приложения.
+  useEffect(() => {
+    if (stationsView.mode !== 'list') {
+      window.history.pushState({ uziprepSubview: true }, '');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stationsView.mode]);
+
+  useEffect(() => {
+    function handlePopState() {
+      setStationsView((prev) => (prev.mode !== 'list' ? { mode: 'list' } : prev));
+    }
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   useEffect(() => {
     if (!session || !online) return;
     const push = () => {
@@ -75,6 +97,10 @@ export default function App() {
       window.removeEventListener('online', push);
     };
   }, [session, online]);
+
+  function goBack() {
+    window.history.back();
+  }
 
   function changeTab(t: Tab) {
     setStationsView({ mode: 'list' });
@@ -104,19 +130,19 @@ export default function App() {
       <NavBar active={tab} onChange={changeTab} variant="rail" />
       <main className="min-w-0 flex-1 p-4 pb-24 md:p-6">
         {tab === 'stations' && stationsView.mode === 'detail' && (
-          <StationDetailScreen stationId={stationsView.stationId} onBack={() => setStationsView({ mode: 'list' })} />
+          <StationDetailScreen stationId={stationsView.stationId} onBack={goBack} />
         )}
         {tab === 'stations' && stationsView.mode === 'weakspots' && (
           <WeakSpotsScreen onOpenStation={openStation} />
         )}
         {tab === 'stations' && stationsView.mode === 'mnemonics' && (
-          <MnemonicsScreen onBack={() => setStationsView({ mode: 'list' })} onOpenStation={openStation} />
+          <MnemonicsScreen onBack={goBack} onOpenStation={openStation} />
         )}
         {tab === 'stations' && stationsView.mode === 'stats' && (
-          <StatsDashboardScreen onBack={() => setStationsView({ mode: 'list' })} />
+          <StatsDashboardScreen onBack={goBack} />
         )}
         {tab === 'stations' && stationsView.mode === 'character' && (
-          <CharacterGate onBack={() => setStationsView({ mode: 'list' })} onOpenStats={() => setStationsView({ mode: 'stats' })} />
+          <CharacterGate onBack={goBack} onOpenStats={() => setStationsView({ mode: 'stats' })} />
         )}
         {tab === 'stations' && stationsView.mode === 'list' && (
           <StationsScreen
