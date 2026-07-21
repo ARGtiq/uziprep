@@ -7,6 +7,17 @@ export interface CharacterData {
 }
 
 const LS_KEY = 'uziprep.character';
+const LS_SHOW_ON_HOME = 'uziprep.character.showOnHome';
+
+/** По умолчанию показываем — но можно убрать, если персонаж на главной мешает/не нужен. */
+export function getShowOnHome(): boolean {
+  const raw = localStorage.getItem(LS_SHOW_ON_HOME);
+  return raw === null ? true : raw === '1';
+}
+
+export function setShowOnHome(v: boolean) {
+  localStorage.setItem(LS_SHOW_ON_HOME, v ? '1' : '0');
+}
 
 export const CLASS_META: Record<CharacterClass, { label: string; blurb: string }> = {
   warrior: { label: 'Воин', blurb: 'Идёт напролом — челленджи и "без права на ошибку" даются легче всего' },

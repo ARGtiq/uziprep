@@ -20,6 +20,7 @@ import { DiagnosticsButton } from '@/components/DiagnosticsButton';
 import { askAiTutorOnce } from '@/lib/aiClient';
 import { exportBackup, downloadBackup, importBackup, type BackupData } from '@/lib/backup';
 import { getExamDate, setExamDate } from '@/lib/examDeadline';
+import { getShowOnHome, setShowOnHome as setCharacterShowOnHome } from '@/lib/character';
 import { getTtsRate, setTtsRate, getTtsVoiceURI, setTtsVoiceURI, listAvailableVoices } from '@/lib/ttsSettings';
 import {
   isRemindersEnabled,
@@ -31,6 +32,7 @@ import {
 
 export function ProfileScreen() {
   const { preference, setPreference, seedHex, setSeedHex, sourceKey, setSourceKey, colorfulIcons, setColorfulIcons, fontScale, setFontScale } = useTheme();
+  const [characterOnHome, setCharacterOnHome] = useState(getShowOnHome);
   const { session, loading, configured, authError, signInWithEmail, resendMagicLink, signOut } = useAuth();
   const [email, setEmail] = useState('');
   const [sentTo, setSentTo] = useState<string | null>(null);
@@ -419,6 +421,23 @@ export function ProfileScreen() {
             className={`h-6 w-11 shrink-0 rounded-full transition-colors ${colorfulIcons ? 'bg-primary' : 'bg-outline-variant'}`}
           >
             <div className={`h-5 w-5 rounded-full bg-surface transition-transform ${colorfulIcons ? 'translate-x-5' : 'translate-x-0.5'}`} />
+          </button>
+        </div>
+
+        <div className="mt-3 flex items-center justify-between border-t border-outline-variant pt-3">
+          <div>
+            <span className="text-sm">Персонаж на главной</span>
+            <div className="text-xs text-on-surface-variant">Аватар персонажа в карточке уровня вместо иконки-заглушки</div>
+          </div>
+          <button
+            onClick={() => {
+              const next = !characterOnHome;
+              setCharacterOnHome(next);
+              setCharacterShowOnHome(next);
+            }}
+            className={`h-6 w-11 shrink-0 rounded-full transition-colors ${characterOnHome ? 'bg-primary' : 'bg-outline-variant'}`}
+          >
+            <div className={`h-5 w-5 rounded-full bg-surface transition-transform ${characterOnHome ? 'translate-x-5' : 'translate-x-0.5'}`} />
           </button>
         </div>
 

@@ -7,6 +7,8 @@ import { IconBadge } from '@/components/IconBadge';
 import { db } from '@/lib/db';
 import { getStreak, getStationXp, levelForXp, getAllXp } from '@/lib/streakAndXp';
 import { NextActionCard } from '@/components/NextActionCard';
+import { CharacterAvatar } from '@/components/CharacterAvatar';
+import { getCharacter, hasCharacter, getShowOnHome, setShowOnHome, levelFromXp, tierFromLevel } from '@/lib/character';
 
 const CATS: Array<StationCategory | 'Все'> = ['Все', 'УЗИ', 'Неотложная помощь', 'Общие навыки'];
 
@@ -20,6 +22,8 @@ interface Props {
 
 export function StationsScreen({ onOpenStation, onGoExam, onOpenWeakSpots, onOpenMnemonics, onOpenCharacter }: Props) {
   const streak = getStreak();
+  const [showCharacterOnHome, setShowCharacterOnHome] = useState(getShowOnHome);
+  const character = hasCharacter() ? getCharacter() : null;
   const [filter, setFilter] = useState<(typeof CATS)[number]>('Все');
   const list = STATIONS.filter((s) => filter === 'Все' || s.category === filter);
   const allProgress = useLiveQuery(() => db.progress.toArray(), []) ?? [];
@@ -51,6 +55,12 @@ export function StationsScreen({ onOpenStation, onGoExam, onOpenWeakSpots, onOpe
     return bestRatio;
   }
 
+  function hideCharacter(e: React.MouseEvent) {
+    e.stopPropagation();
+    setShowOnHome(false);
+    setShowCharacterOnHome(false);
+  }
+
   return (
     <div>
       <div className="relative mb-4 flex h-44 flex-col justify-end overflow-hidden rounded-m3-lg bg-primary p-5 text-on-primary">
@@ -68,13 +78,32 @@ export function StationsScreen({ onOpenStation, onGoExam, onOpenWeakSpots, onOpe
 
       <NextActionCard onOpenWeakSpots={onOpenWeakSpots} onOpenStation={onOpenStation} onGoExam={onGoExam} />
 
-      <button
+      <div
+        role="button"
+        tabIndex={0}
         onClick={onOpenCharacter}
-        className="mb-3 flex w-full items-center gap-3 rounded-m3-md bg-surface-container-low p-3.5 text-left"
+        onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onOpenCharacter()}
+        className="relative mb-3 flex w-full cursor-pointer items-center gap-3 rounded-m3-md bg-surface-container-low p-3.5 text-left"
       >
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary-container text-on-primary-container">
-          <Icon name="workspace_premium" size={20} />
-        </div>
+        {character && showCharacterOnHome ? (
+          <>
+            <div className="shrink-0">
+              <CharacterAvatar characterClass={character.class} tier={tierFromLevel(levelFromXp(Object.values(getAllXp()).reduce((a, b) => a + b, 0)).level)} size={44} />
+            </div>
+            <button
+              onClick={hideCharacter}
+              aria-label="Скрыть персонажа с главной"
+              title="Скрыть с главной"
+              className="absolute right-2 top-2 text-on-surface-variant opacity-40 hover:opacity-100"
+            >
+              <Icon name="close" size={14} />
+            </button>
+          </>
+        ) : (
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary-container text-on-primary-container">
+            <Icon name="workspace_premium" size={20} />
+          </div>
+        )}
         <div className="flex-1">
           <b className="text-sm">{levelForXp(Object.values(getAllXp()).reduce((a, b) => a + b, 0)).label}</b>
           <div className="text-xs text-on-surface-variant">
@@ -83,7 +112,7 @@ export function StationsScreen({ onOpenStation, onGoExam, onOpenWeakSpots, onOpe
           </div>
         </div>
         <Icon name="arrow_forward" size={16} className="shrink-0 text-on-surface-variant" />
-      </button>
+      </div>
 
       <div className="mb-3 flex gap-2">
         <button onClick={onOpenWeakSpots} className="flex flex-1 items-center justify-center gap-1 rounded-full border border-outline-variant py-2 text-xs font-semibold text-on-surface-variant">

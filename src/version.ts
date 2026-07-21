@@ -1,4 +1,4 @@
-export const APP_VERSION = '1.1.0';
+export const APP_VERSION = '1.1.1';
 
 export interface ChangelogEntry {
   version: string;
@@ -13,6 +13,14 @@ export interface ChangelogEntry {
  * закэшированной старой.
  */
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '1.1.1',
+    date: '2026-07-20',
+    items: [
+      'Аватар персонажа теперь виден в карточке уровня на главном экране (не только на отдельном экране персонажа)',
+      'Крестик на карточке скрывает персонажа с главной; переключатель в Профиле — вернуть обратно',
+    ],
+  },
   {
     version: '1.1.0',
     date: '2026-07-20',
