@@ -17,15 +17,16 @@ interface Props {
 }
 
 /**
- * "Почему именно так?" — объясняет логику шага, а не просто порядок.
- * Результат сохраняется в Dexie (как и мнемоники) — при повторном
- * визите сразу виден в свёрнутом спойлере, не нужно спрашивать заново
- * и ждать AI. Спойлер по умолчанию закрыт, чтобы не загромождать
- * список шагов текстом на каждом заходе.
+ * "Почему именно так?" — теперь просто маленький значок-вопрос справа
+ * от шага, не текстовая кнопка слева. Меньше визуального веса — это
+ * вспомогательная опция, а не основной элемент строки. Раскрывшийся
+ * ответ занимает всю ширину строки — родитель должен быть flex-wrap,
+ * чтобы фрагмент (кнопка + прижатая к ней панель) корректно переносился.
  */
 export function WhyThisStepButton({ stationId, stationTitle, blockName, stepNum, stepText, prevStep, nextStep }: Props) {
   const key = `${stationId}::${blockName}::${stepNum}`;
   const [saved, setSaved] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const configured = isAiConfigured();
@@ -54,32 +55,37 @@ export function WhyThisStepButton({ stationId, stationTitle, blockName, stepNum,
     }
   }
 
-  if (!configured) return null;
-
-  if (saved) {
-    return (
-      <details className="mt-1">
-        <summary className="cursor-pointer list-none text-xs text-primary">
-          <span className="mr-1 inline-block [details[open]_&]:rotate-90">›</span>
-          Почему именно так?
-        </summary>
-        <div className="mt-1.5 rounded-m3-md bg-secondary-container p-2.5 text-xs leading-relaxed text-on-secondary-container">
-          {renderSimpleMarkdown(saved)}
-          <button onClick={ask} disabled={loading} className="mt-1.5 block text-[11px] font-semibold text-primary underline disabled:opacity-50">
-            {loading ? 'Думаю...' : 'Спросить другой вариант'}
-          </button>
-        </div>
-      </details>
-    );
+  function toggle() {
+    const next = !expanded;
+    setExpanded(next);
+    if (next && !saved && !loading) ask();
   }
 
+  if (!configured) return null;
+
   return (
-    <div className="mt-1">
-      <button onClick={ask} disabled={loading} className="flex items-center gap-1 text-xs text-primary disabled:opacity-50">
-        <Icon name="auto_awesome" size={12} />
-        {loading ? 'Думаю...' : 'Почему именно так?'}
+    <>
+      <button
+        onClick={toggle}
+        aria-label="Почему именно так?"
+        title="Почему именно так?"
+        className="shrink-0 self-start text-on-surface-variant opacity-50 hover:opacity-100"
+      >
+        <Icon name="help" size={15} />
       </button>
-      {error && <p className="mt-1.5 text-xs text-error">{error}</p>}
-    </div>
+
+      {expanded && (
+        <div className="w-full basis-full rounded-m3-md bg-secondary-container p-2.5 text-xs leading-relaxed text-on-secondary-container">
+          {loading && 'Думаю...'}
+          {!loading && saved && renderSimpleMarkdown(saved)}
+          {!loading && error && <span className="text-error">{error}</span>}
+          {!loading && saved && (
+            <button onClick={ask} className="mt-1.5 block text-[11px] font-semibold text-primary underline">
+              Спросить другой вариант
+            </button>
+          )}
+        </div>
+      )}
+    </>
   );
 }

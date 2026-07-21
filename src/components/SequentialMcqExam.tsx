@@ -3,6 +3,7 @@ import { STATIONS } from '@/data/stations';
 import type { QuizQuestion } from '@/types/station';
 import { getWrongQuestionIds, recordQuestionResult } from '@/lib/questionStats';
 import { Icon } from '@/components/Icon';
+import { Confetti } from '@/components/Confetti';
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -32,6 +33,16 @@ export function SequentialMcqExam({ source, onExit }: Props) {
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const [correctCount, setCorrectCount] = useState(0);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [confettiShown, setConfettiShown] = useState(false);
+
+  const done = questions !== null && index >= questions.length;
+
+  useEffect(() => {
+    if (!done || confettiShown || !questions || questions.length === 0) return;
+    setConfettiShown(true);
+    if (correctCount === questions.length) setShowConfetti(true);
+  }, [done, confettiShown, questions, correctCount]);
 
   useEffect(() => {
     (async () => {
@@ -67,7 +78,6 @@ export function SequentialMcqExam({ source, onExit }: Props) {
 
   const q = questions[index];
   const isLast = index === questions.length - 1;
-  const done = index >= questions.length;
 
   async function select(i: number) {
     if (selected !== null) return;
@@ -86,6 +96,7 @@ export function SequentialMcqExam({ source, onExit }: Props) {
     const percent = Math.round((correctCount / questions.length) * 100);
     return (
       <div className="py-6 text-center">
+        {showConfetti && <Confetti onDone={() => setShowConfetti(false)} />}
         <Icon name={percent >= 70 ? 'workspace_premium' : 'refresh'} size={44} className="mx-auto text-primary" />
         <h2 className="mt-3 text-lg font-semibold">{percent}%</h2>
         <p className="mt-1 text-sm text-on-surface-variant">

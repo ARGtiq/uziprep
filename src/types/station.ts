@@ -57,6 +57,8 @@ export interface Station {
   checklist: ChecklistBlock[];
   scenarios?: StationScenario[];
   quiz?: QuizQuestion[];
+  /** Из "Таблицы N. Примерные тексты вводной информации..." паспорта — что говорит член АПК в роли пациента/диспетчера по ходу станции. */
+  introDialogue?: IntroDialogueRow[];
 }
 
 export interface StationProgress {
@@ -65,4 +67,10 @@ export interface StationProgress {
   orderingBestScore?: number; // 0..1, лучший результат drag-n-drop попытки
   lastPracticedAt?: number;
   updatedAt: number; // timestamp последнего изменения — для разрешения конфликтов sync (last-write-wins)
+}
+
+/** Строка из "Таблицы N. Примерные тексты вводной информации в рамках диалога члена АПК и аккредитуемого лица" паспорта станции. */
+export interface IntroDialogueRow {
+  trigger: string; // когда звучит реплика ("При вопросе о ФИО пациента" и т.д.)
+  text: string; // сама реплика члена АПК
 }

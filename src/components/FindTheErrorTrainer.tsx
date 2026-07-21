@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import type { StepItem } from '@/types/station';
 import { Icon } from '@/components/Icon';
+import { Confetti } from '@/components/Confetti';
 
 interface Props {
   steps: StepItem[];
@@ -32,6 +33,7 @@ export function FindTheErrorTrainer({ steps, onFinish }: Props) {
 
   const [selected, setSelected] = useState<number[]>([]);
   const [checked, setChecked] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
 
   function toggle(i: number) {
     if (checked) return;
@@ -41,6 +43,7 @@ export function FindTheErrorTrainer({ steps, onFinish }: Props) {
   function check() {
     setChecked(true);
     const correct = selected.length === 2 && selected.sort((a, b) => a - b).every((v, i) => v === swappedIndices[i]);
+    if (correct) setShowConfetti(true);
     onFinish?.(correct);
   }
 
@@ -48,6 +51,7 @@ export function FindTheErrorTrainer({ steps, onFinish }: Props) {
 
   return (
     <div>
+      {showConfetti && <Confetti onDone={() => setShowConfetti(false)} />}
       <p className="mb-3 text-xs text-on-surface-variant">
         Два шага в этом списке переставлены местами. Найди оба (тапни на них) и проверь.
       </p>

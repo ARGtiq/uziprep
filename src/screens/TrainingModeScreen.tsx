@@ -7,6 +7,7 @@ import { FindTheErrorTrainer } from '@/components/FindTheErrorTrainer';
 import { OcclusionTrainer } from '@/components/OcclusionTrainer';
 import { VoiceRecallTrainer } from '@/components/VoiceRecallTrainer';
 import { BlockAccordionTrainer } from '@/components/BlockAccordionTrainer';
+import { mergeBlocksToTarget } from '@/lib/mergeBlocks';
 import { StepOrderingGame } from '@/components/StepOrderingGame';
 import { saveProgress } from '@/lib/db';
 import { Icon } from '@/components/Icon';
@@ -92,6 +93,7 @@ export function TrainingModeScreen({ kind, onExit }: Props) {
 
   const station = STATIONS.find((s) => s.id === stationId)!;
   const flatSteps = scenario.stepBlocks.flatMap((b) => b.items);
+  const mergedBlocks = mergeBlocksToTarget(scenario.stepBlocks);
 
   return (
     <div>
@@ -101,8 +103,8 @@ export function TrainingModeScreen({ kind, onExit }: Props) {
       <h1 className="mb-1 text-xl font-semibold">{station.title}</h1>
       <p className="mb-4 text-xs text-on-surface-variant">{scenario.name !== 'default' ? scenario.name : null}</p>
 
-      {kind === 'blocks' && <BlockAccordionTrainer key={scenario.name} stationId={station.id} scenarioName={scenario.name} blocks={scenario.stepBlocks} />}
-      {kind === 'challenge' && <ZeroMistakeChallenge stationId={station.id} scenarioName={scenario.name} blocks={scenario.stepBlocks} />}
+      {kind === 'blocks' && <BlockAccordionTrainer key={scenario.name} stationId={station.id} scenarioName={scenario.name} blocks={mergedBlocks} />}
+      {kind === 'challenge' && <ZeroMistakeChallenge stationId={station.id} scenarioName={scenario.name} blocks={mergedBlocks} />}
       {kind === 'core-diff' && station.scenarios && <CoreThenDiffTrainer stationId={station.id} scenarios={station.scenarios} />}
       {kind === 'find-error' && flatSteps.length > 0 && <FindTheErrorTrainer steps={flatSteps} />}
       {kind === 'occlusion' && flatSteps.length > 0 && <OcclusionTrainer steps={flatSteps} />}

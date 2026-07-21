@@ -4,6 +4,7 @@ import { getProgress, saveProgress } from '@/lib/db';
 import { addXp } from '@/lib/streakAndXp';
 import { ScenarioComparisonView } from '@/components/ScenarioComparisonView';
 import { WhyThisStepButton } from '@/components/WhyThisStepButton';
+import { IntroDialogueBox } from '@/components/IntroDialogueBox';
 import { MnemonicButton } from '@/components/MnemonicButton';
 import { AudioNarration } from '@/components/AudioNarration';
 import { Confetti } from '@/components/Confetti';
@@ -181,6 +182,7 @@ export function StationDetailScreen({ stationId, onBack }: Props) {
                 Экзамена.
               </p>
               <AudioNarration steps={flatStepItems} />
+              {station.introDialogue && <IntroDialogueBox rows={station.introDialogue} />}
               {activeStepBlocks.map((block) => (
                 <div key={block.block} className="mb-4">
                   <div className="mb-1.5 flex items-center justify-between">
@@ -188,24 +190,20 @@ export function StationDetailScreen({ stationId, onBack }: Props) {
                   </div>
                   <MnemonicButton stationId={stationId} stationTitle={station.title} blockName={block.block} itemTexts={block.items.map((i) => i.text)} />
                   {block.items.map((step, i) => (
-                    <div key={step.num} className="border-b border-outline-variant py-3 last:border-none">
-                      <div className="flex gap-3">
-                        <div className="flex h-[24px] w-[24px] shrink-0 items-center justify-center rounded-full bg-secondary-container text-[11px] font-semibold text-on-secondary-container">
-                          {step.num}
-                        </div>
-                        <p className="text-sm leading-relaxed">{step.text}</p>
+                    <div key={step.num} className="flex flex-wrap items-start gap-3 border-b border-outline-variant py-3 last:border-none">
+                      <div className="flex h-[24px] w-[24px] shrink-0 items-center justify-center rounded-full bg-secondary-container text-[11px] font-semibold text-on-secondary-container">
+                        {step.num}
                       </div>
-                      <div className="pl-9">
-                        <WhyThisStepButton
-                          stationId={stationId}
-                          stationTitle={station.title}
-                          blockName={block.block}
-                          stepNum={step.num}
-                          stepText={step.text}
-                          prevStep={block.items[i - 1]?.text}
-                          nextStep={block.items[i + 1]?.text}
-                        />
-                      </div>
+                      <p className="min-w-0 flex-1 text-sm leading-relaxed">{step.text}</p>
+                      <WhyThisStepButton
+                        stationId={stationId}
+                        stationTitle={station.title}
+                        blockName={block.block}
+                        stepNum={step.num}
+                        stepText={step.text}
+                        prevStep={block.items[i - 1]?.text}
+                        nextStep={block.items[i + 1]?.text}
+                      />
                     </div>
                   ))}
                 </div>
@@ -213,26 +211,53 @@ export function StationDetailScreen({ stationId, onBack }: Props) {
             </>
           )}
 
-          {tab === 'check' &&
-            activeChecklist.map((block) => (
-              <div key={block.block}>
-                <h2 className="mt-4 mb-2 text-sm font-semibold text-on-surface-variant">{block.block}</h2>
-                {block.items.map((item) => {
-                  const key = `${activeScenario?.name ?? 'default'}::${block.block}::${item}`;
-                  return (
-                    <label key={key} className="flex items-start gap-2.5 border-b border-outline-variant py-3 last:border-none">
-                      <input
-                        type="checkbox"
-                        checked={!!checklistDone[key]}
-                        onChange={() => toggle(key)}
-                        className="mt-0.5 h-5 w-5 shrink-0 accent-[rgb(var(--m3-primary))]"
-                      />
-                      <span className="text-sm leading-snug">{item}</span>
-                    </label>
-                  );
-                })}
-              </div>
-            ))}
+          {tab === 'check' && (
+            <>
+              {activeChecklist.map((block) => (
+                <div key={block.block}>
+                  <h2 className="mt-4 mb-2 text-sm font-semibold text-on-surface-variant">{block.block}</h2>
+                  {block.items.map((item) => {
+                    const key = `${activeScenario?.name ?? 'default'}::${block.block}::${item}`;
+                    return (
+                      <label key={key} className="flex items-start gap-2.5 border-b border-outline-variant py-3 last:border-none">
+                        <input
+                          type="checkbox"
+                          checked={!!checklistDone[key]}
+                          onChange={() => toggle(key)}
+                          className="mt-0.5 h-5 w-5 shrink-0 accent-[rgb(var(--m3-primary))]"
+                        />
+                        <span className="text-sm leading-snug">{item}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              ))}
+
+              {(() => {
+                const total = activeChecklist.reduce((sum, b) => sum + b.items.length, 0);
+                const done = activeChecklist.reduce(
+                  (sum, b) => sum + b.items.filter((item) => checklistDone[`${activeScenario?.name ?? 'default'}::${b.block}::${item}`]).length,
+                  0,
+                );
+                const percent = total > 0 ? Math.round((done / total) * 100) : 0;
+                const PASS_THRESHOLD = 0.7; // условный порог для тренировки — не официальный проходной балл АПК
+                const passed = total > 0 && done / total >= PASS_THRESHOLD;
+                return (
+                  <div className={`mt-4 flex items-center justify-between rounded-m3-md p-3.5 ${passed ? 'bg-primary-container' : 'bg-error/10'}`}>
+                    <div>
+                      <b className="text-sm">
+                        {done} / {total} выполнено ({percent}%)
+                      </b>
+                      <div className="text-xs text-on-surface-variant">Условный порог {Math.round(PASS_THRESHOLD * 100)}% — не официальный проходной балл</div>
+                    </div>
+                    <span className={`rounded-full px-3 py-1.5 text-xs font-bold ${passed ? 'bg-primary text-on-primary' : 'bg-error text-white'}`}>
+                      {passed ? 'СДАЛ' : 'НЕ СДАЛ'}
+                    </span>
+                  </div>
+                );
+              })()}
+            </>
+          )}
 
           {tab === 'compare' && hasMultipleScenarios && <ScenarioComparisonView scenarios={scenarios!} />}
         </>

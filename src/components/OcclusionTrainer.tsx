@@ -1,6 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { StepItem } from '@/types/station';
 import { Icon } from '@/components/Icon';
+import { Confetti } from '@/components/Confetti';
 
 interface Props {
   steps: StepItem[];
@@ -32,9 +33,19 @@ export function OcclusionTrainer({ steps }: Props) {
   const [index, setIndex] = useState(0);
   const [revealed, setRevealed] = useState(false);
   const [results, setResults] = useState<Record<number, boolean>>({});
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [confettiShown, setConfettiShown] = useState(false);
+
+  const done = index >= cards.length;
+
+  useEffect(() => {
+    if (!done || confettiShown) return;
+    setConfettiShown(true);
+    const rememberedCount = Object.values(results).filter(Boolean).length;
+    if (cards.length > 0 && rememberedCount / cards.length >= 0.7) setShowConfetti(true);
+  }, [done, confettiShown, results, cards.length]);
 
   const card = cards[index];
-  const done = index >= cards.length;
 
   function mark(remembered: boolean) {
     setResults((prev) => ({ ...prev, [index]: remembered }));
@@ -46,6 +57,7 @@ export function OcclusionTrainer({ steps }: Props) {
     const rememberedCount = Object.values(results).filter(Boolean).length;
     return (
       <div className="py-6 text-center">
+        {showConfetti && <Confetti onDone={() => setShowConfetti(false)} />}
         <Icon name="check_circle" size={40} className="mx-auto text-primary" />
         <h2 className="mt-3 text-lg font-semibold">
           Вспомнено {rememberedCount} из {cards.length}

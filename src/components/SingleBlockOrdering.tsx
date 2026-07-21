@@ -31,17 +31,24 @@ interface Props {
  * Общая механика перетаскивания карточек одного блока — вынесена
  * отдельно, чтобы BlockAccordionTrainer и ZeroMistakeChallenge не
  * дублировали одну и ту же логику drag/drop и не расходились багами.
+ *
+ * Явный индикатор места вставки: карточка, над которой сейчас держат
+ * перетаскиваемый элемент, подсвечивается рамкой сверху — видно, куда
+ * именно попадёт карточка при отпускании, а не просто "что-то
+ * перетаскивается". На widescreen раскладка в 2 колонки (grid).
  */
 export function SingleBlockOrdering({ block, resetKey, onChecked, showAdvanceControls = true, onAdvance, advanceLabel = 'Дальше' }: Props) {
   const [cards, setCards] = useState<StepItem[]>(() => shuffle(block.items));
   const [checked, setChecked] = useState(false);
   const [mistakes, setMistakes] = useState(0);
   const [dragKey, setDragKey] = useState<string | null>(null);
+  const [dragOverKey, setDragOverKey] = useState<string | null>(null);
 
   useMemo(() => {
     setCards(shuffle(block.items));
     setChecked(false);
     setMistakes(0);
+    setDragOverKey(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resetKey]);
 
@@ -50,8 +57,14 @@ export function SingleBlockOrdering({ block, resetKey, onChecked, showAdvanceCon
   function handleDragStart(num: string) {
     setDragKey(num);
   }
-  function handleDropOn(targetNum: string) {
-    if (!dragKey || dragKey === targetNum) return;
+  function handleDragEnter(num: string) {
+    if (dragKey && dragKey !== num) setDragOverKey(num);
+  }
+  function handleDrop(targetNum: string) {
+    if (!dragKey || dragKey === targetNum) {
+      setDragOverKey(null);
+      return;
+    }
     setCards((prev) => {
       const next = [...prev];
       const from = next.findIndex((c) => c.num === dragKey);
@@ -61,6 +74,7 @@ export function SingleBlockOrdering({ block, resetKey, onChecked, showAdvanceCon
       return next;
     });
     setDragKey(null);
+    setDragOverKey(null);
   }
   function moveCard(index: number, dir: -1 | 1) {
     setCards((prev) => {
@@ -81,24 +95,30 @@ export function SingleBlockOrdering({ block, resetKey, onChecked, showAdvanceCon
 
   return (
     <div>
-      <div className="flex flex-col gap-2">
+      <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
         {cards.map((card, i) => {
           const isCorrect = checked && card.num === correctOrder[i];
           const isWrong = checked && card.num !== correctOrder[i];
+          const isDragTarget = dragOverKey === card.num;
           return (
             <div
               key={card.num}
               draggable={!checked}
               onDragStart={() => handleDragStart(card.num)}
+              onDragEnter={() => handleDragEnter(card.num)}
               onDragOver={(e) => e.preventDefault()}
-              onDrop={() => handleDropOn(card.num)}
+              onDragLeave={() => setDragOverKey((k) => (k === card.num ? null : k))}
+              onDrop={() => handleDrop(card.num)}
+              onDragEnd={() => setDragOverKey(null)}
               className={[
-                'flex items-center gap-2.5 rounded-m3-md border p-3 text-sm',
+                'flex items-center gap-2.5 rounded-m3-md border-2 p-3 text-sm transition-colors',
                 checked
                   ? isCorrect
                     ? 'border-transparent bg-primary-container'
                     : 'border-error bg-error/10'
-                  : 'border-transparent bg-surface-container-low cursor-grab active:cursor-grabbing',
+                  : isDragTarget
+                    ? 'border-primary border-dashed bg-primary-container/40'
+                    : 'border-transparent bg-surface-container-low cursor-grab active:cursor-grabbing',
               ].join(' ')}
             >
               <Icon name="drag_indicator" size={16} className="shrink-0 text-on-surface-variant" />
@@ -118,6 +138,10 @@ export function SingleBlockOrdering({ block, resetKey, onChecked, showAdvanceCon
           );
         })}
       </div>
+
+      {!checked && (
+        <p className="mt-2 text-[11px] text-on-surface-variant">Перетащи карточку на другую — она подсветится пунктиром, туда и встанет</p>
+      )}
 
       <div className="mt-4 flex gap-3">
         {!checked ? (
