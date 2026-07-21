@@ -4,6 +4,7 @@ import type { QuizQuestion } from '@/types/station';
 import { getWrongQuestionIds, recordQuestionResult } from '@/lib/questionStats';
 import { Icon } from '@/components/Icon';
 import { Confetti } from '@/components/Confetti';
+import { addXp } from '@/lib/streakAndXp';
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -41,7 +42,10 @@ export function SequentialMcqExam({ source, onExit }: Props) {
   useEffect(() => {
     if (!done || confettiShown || !questions || questions.length === 0) return;
     setConfettiShown(true);
-    if (correctCount === questions.length) setShowConfetti(true);
+    if (correctCount === questions.length) {
+      setShowConfetti(true);
+      addXp('exam', 15); // бонус за идеальный прогон целиком
+    }
   }, [done, confettiShown, questions, correctCount]);
 
   useEffect(() => {
@@ -85,6 +89,7 @@ export function SequentialMcqExam({ source, onExit }: Props) {
     const correct = i === q.correctIndex;
     if (correct) setCorrectCount((c) => c + 1);
     await recordQuestionResult(q.id, correct);
+    addXp('exam', correct ? 2 : 1);
   }
 
   function next() {

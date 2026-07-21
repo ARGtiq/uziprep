@@ -3,6 +3,7 @@ import { STATIONS } from '@/data/stations';
 import type { QuizQuestion } from '@/types/station';
 import { Icon } from '@/components/Icon';
 import { recordQuestionResult } from '@/lib/questionStats';
+import { addXp } from '@/lib/streakAndXp';
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -57,6 +58,7 @@ export function ExamFeverMode({ onExit }: Props) {
     if (gameOver && index > bestStreak) {
       setBestStreak(index);
       localStorage.setItem('uziprep.fever.best', String(index));
+      addXp('exam', 10); // бонус за новый личный рекорд серии
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameOver]);
@@ -77,7 +79,9 @@ export function ExamFeverMode({ onExit }: Props) {
     setSelected(i);
     const correct = i === q.correctIndex;
     recordQuestionResult(q.id, correct);
-    if (!correct) {
+    if (correct) {
+      addXp('exam', 4); // больше, чем в спокойных режимах — тут ответ под давлением таймера
+    } else {
       setTimedOut(false);
       setGameOver(true);
     }

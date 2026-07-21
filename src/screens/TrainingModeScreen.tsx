@@ -10,6 +10,7 @@ import { BlockAccordionTrainer } from '@/components/BlockAccordionTrainer';
 import { mergeBlocksToTarget } from '@/lib/mergeBlocks';
 import { StepOrderingGame } from '@/components/StepOrderingGame';
 import { saveProgress } from '@/lib/db';
+import { addXp } from '@/lib/streakAndXp';
 import { Icon } from '@/components/Icon';
 import { IconBadge } from '@/components/IconBadge';
 
@@ -106,14 +107,17 @@ export function TrainingModeScreen({ kind, onExit }: Props) {
       {kind === 'blocks' && <BlockAccordionTrainer key={scenario.name} stationId={station.id} scenarioName={scenario.name} blocks={mergedBlocks} />}
       {kind === 'challenge' && <ZeroMistakeChallenge stationId={station.id} scenarioName={scenario.name} blocks={mergedBlocks} />}
       {kind === 'core-diff' && station.scenarios && <CoreThenDiffTrainer stationId={station.id} scenarios={station.scenarios} />}
-      {kind === 'find-error' && flatSteps.length > 0 && <FindTheErrorTrainer steps={flatSteps} />}
-      {kind === 'occlusion' && flatSteps.length > 0 && <OcclusionTrainer steps={flatSteps} />}
-      {kind === 'voice' && <VoiceRecallTrainer scenarioName={scenario.name !== 'default' ? scenario.name : station.title} steps={flatSteps} />}
+      {kind === 'find-error' && flatSteps.length > 0 && <FindTheErrorTrainer stationId={station.id} steps={flatSteps} />}
+      {kind === 'occlusion' && flatSteps.length > 0 && <OcclusionTrainer stationId={station.id} steps={flatSteps} />}
+      {kind === 'voice' && <VoiceRecallTrainer stationId={station.id} scenarioName={scenario.name !== 'default' ? scenario.name : station.title} steps={flatSteps} />}
       {kind === 'full' && (
         <StepOrderingGame
           key={`${station.id}::${scenario.name}::full`}
           station={{ ...station, id: `${station.id}::${scenario.name}`, steps: scenario.steps }}
-          onFinish={(score) => saveProgress({ stationId: station.id, orderingBestScore: score, lastPracticedAt: Date.now() })}
+          onFinish={(score) => {
+            saveProgress({ stationId: station.id, orderingBestScore: score, lastPracticedAt: Date.now() });
+            addXp(station.id, score === 1 ? 10 : 3);
+          }}
           timeKey={`${station.id}::${scenario.name}::full`}
         />
       )}

@@ -3,8 +3,10 @@ import type { StepItem } from '@/types/station';
 import { askAiTutorOnce } from '@/lib/aiClient';
 import { isAiConfigured } from '@/lib/aiSettings';
 import { Icon } from '@/components/Icon';
+import { addXp } from '@/lib/streakAndXp';
 
 interface Props {
+  stationId?: string;
   scenarioName: string;
   steps: StepItem[];
 }
@@ -37,7 +39,7 @@ function getSpeechRecognition(): (new () => SpeechRecognitionLike) | null {
  * частично) — Firefox Web Speech API не поддерживает, тогда просто
  * скрываем кнопку записи и даём только текстовое поле.
  */
-export function VoiceRecallTrainer({ scenarioName, steps }: Props) {
+export function VoiceRecallTrainer({ stationId, scenarioName, steps }: Props) {
   const [recording, setRecording] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [feedback, setFeedback] = useState<string | null>(null);
@@ -88,6 +90,7 @@ export function VoiceRecallTrainer({ scenarioName, steps }: Props) {
         `Не придирайся к дословности формулировок — оценивай только полноту и логику последовательности.`;
       const reply = await askAiTutorOnce(prompt);
       setFeedback(reply);
+      addXp(stationId ?? 'exam', 5); // фиксированный XP за факт прохождения — AI-ответ произвольный, нет чёткого "верно/неверно"
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Не удалось получить разбор');
     } finally {

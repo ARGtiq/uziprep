@@ -4,6 +4,7 @@ import type { QuizQuestion, Station } from '@/types/station';
 import { StepOrderingGame } from '@/components/StepOrderingGame';
 import { Icon } from '@/components/Icon';
 import { saveExamAttempt } from '@/lib/db';
+import { addXp } from '@/lib/streakAndXp';
 import { recordQuestionResult } from '@/lib/questionStats';
 import { getExamOrderingSteps } from '@/lib/scenarioComparison';
 
@@ -189,6 +190,10 @@ export function MixedExam({ questionCount, secondsPerRun, onExit, allowedStation
       return next;
     });
     recordQuestionResult(q.id, correct);
+    // Вопросы в смешанном экзамене не привязаны к одной станции (пул
+    // собран из всех сразу) — XP кладём в общую "экзаменационную"
+    // копилку, не пытаясь угадать станцию вопроса.
+    addXp('exam', correct ? 3 : 1);
   }
 
   function finishOrdering(ratio: number) {
@@ -197,6 +202,7 @@ export function MixedExam({ questionCount, secondsPerRun, onExit, allowedStation
       next[index] = ratio;
       return next;
     });
+    if (item.kind === 'ordering') addXp(item.station.id, ratio === 1 ? 8 : 2);
   }
 
   return (

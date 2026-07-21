@@ -2,9 +2,11 @@ import { useEffect, useMemo, useState } from 'react';
 import type { StepItem } from '@/types/station';
 import { Icon } from '@/components/Icon';
 import { Confetti } from '@/components/Confetti';
+import { addXp } from '@/lib/streakAndXp';
 
 interface Props {
   steps: StepItem[];
+  stationId?: string;
 }
 
 /** Прячем 2-4 значимых слова (длиннее 4 букв) в каждом шаге под плашку. */
@@ -28,7 +30,7 @@ function occludeText(text: string): { display: string; hidden: string[] } {
  * пользователь сам отмечает "вспомнил" / "не вспомнил" для следующего
  * шага-подсказки, что показывает прогресс по карточке.
  */
-export function OcclusionTrainer({ steps }: Props) {
+export function OcclusionTrainer({ steps, stationId }: Props) {
   const cards = useMemo(() => steps.map((s) => ({ ...s, ...occludeText(s.text) })), [steps]);
   const [index, setIndex] = useState(0);
   const [revealed, setRevealed] = useState(false);
@@ -42,13 +44,17 @@ export function OcclusionTrainer({ steps }: Props) {
     if (!done || confettiShown) return;
     setConfettiShown(true);
     const rememberedCount = Object.values(results).filter(Boolean).length;
-    if (cards.length > 0 && rememberedCount / cards.length >= 0.7) setShowConfetti(true);
-  }, [done, confettiShown, results, cards.length]);
+    if (cards.length > 0 && rememberedCount / cards.length >= 0.7) {
+      setShowConfetti(true);
+      addXp(stationId ?? 'exam', 10);
+    }
+  }, [done, confettiShown, results, cards.length, stationId]);
 
   const card = cards[index];
 
   function mark(remembered: boolean) {
     setResults((prev) => ({ ...prev, [index]: remembered }));
+    addXp(stationId ?? 'exam', remembered ? 2 : 1);
     setRevealed(false);
     setIndex((i) => i + 1);
   }

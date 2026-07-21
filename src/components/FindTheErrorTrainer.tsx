@@ -2,9 +2,11 @@ import { useMemo, useState } from 'react';
 import type { StepItem } from '@/types/station';
 import { Icon } from '@/components/Icon';
 import { Confetti } from '@/components/Confetti';
+import { addXp } from '@/lib/streakAndXp';
 
 interface Props {
   steps: StepItem[];
+  stationId?: string;
   onFinish?: (correct: boolean) => void;
 }
 
@@ -25,7 +27,7 @@ function swapTwoRandom<T>(arr: T[]): { result: T[]; swappedIndices: [number, num
  * заметно быстрее физически, держит внимание на структуре, а не на
  * механике перетаскивания.
  */
-export function FindTheErrorTrainer({ steps, onFinish }: Props) {
+export function FindTheErrorTrainer({ steps, stationId, onFinish }: Props) {
   const { shuffled, swappedIndices } = useMemo(() => {
     const { result, swappedIndices } = swapTwoRandom(steps);
     return { shuffled: result, swappedIndices };
@@ -44,6 +46,7 @@ export function FindTheErrorTrainer({ steps, onFinish }: Props) {
     setChecked(true);
     const correct = selected.length === 2 && selected.sort((a, b) => a - b).every((v, i) => v === swappedIndices[i]);
     if (correct) setShowConfetti(true);
+    addXp(stationId ?? 'exam', correct ? 5 : 1);
     onFinish?.(correct);
   }
 

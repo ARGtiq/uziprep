@@ -35,6 +35,7 @@ const LS_KEYS_TO_BACKUP = [
   'uziprep.scenarioViewMode',
   'uziprep.character',
   'uziprep.character.showOnHome',
+  'uziprep.fever.best',
 ];
 
 export async function exportBackup(): Promise<BackupData> {
