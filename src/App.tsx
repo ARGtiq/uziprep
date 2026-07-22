@@ -10,6 +10,7 @@ import { StationOverviewScreen } from '@/screens/StationOverviewScreen';
 import { CheatSheetScreen } from '@/screens/CheatSheetScreen';
 import { UziRitualScreen } from '@/screens/UziRitualScreen';
 import { OskeStructureScreen } from '@/screens/OskeStructureScreen';
+import { ActionPatternScreen } from '@/screens/ActionPatternScreen';
 import { ExamScreen } from '@/screens/ExamScreen';
 import { AiTutorScreen } from '@/screens/AiTutorScreen';
 import { ProfileScreen } from '@/screens/ProfileScreen';
@@ -36,7 +37,8 @@ type StationsView =
   | { mode: 'overview' }
   | { mode: 'cheatsheet' }
   | { mode: 'uzi-ritual' }
-  | { mode: 'oske-structure' };
+  | { mode: 'oske-structure' }
+  | { mode: 'action-pattern' };
 
 export default function App() {
   const [tab, setTab] = useState<Tab>('stations');
@@ -154,8 +156,11 @@ export default function App() {
         )}
         {tab === 'stations' && stationsView.mode === 'overview' && <StationOverviewScreen onBack={goBack} onOpenCheatSheet={() => setStationsView({ mode: 'cheatsheet' })} />}
         {tab === 'stations' && stationsView.mode === 'cheatsheet' && <CheatSheetScreen onBack={goBack} />}
-        {tab === 'stations' && stationsView.mode === 'uzi-ritual' && <UziRitualScreen onBack={goBack} onOpenStation={openStation} />}
+        {tab === 'stations' && stationsView.mode === 'uzi-ritual' && (
+          <UziRitualScreen onBack={goBack} onOpenStation={openStation} onOpenActionPattern={() => setStationsView({ mode: 'action-pattern' })} />
+        )}
         {tab === 'stations' && stationsView.mode === 'oske-structure' && <OskeStructureScreen onBack={goBack} />}
+        {tab === 'stations' && stationsView.mode === 'action-pattern' && <ActionPatternScreen onBack={goBack} />}
         {tab === 'stations' && stationsView.mode === 'list' && (
           <StationsScreen
             onOpenStation={openStation}

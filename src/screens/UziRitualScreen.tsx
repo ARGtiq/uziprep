@@ -5,6 +5,7 @@ import { Icon } from '@/components/Icon';
 interface Props {
   onBack: () => void;
   onOpenStation: (stationId: string) => void;
+  onOpenActionPattern: () => void;
 }
 
 /**
@@ -12,7 +13,7 @@ interface Props {
  * учебный материал, экономит время каждый день (выучил один раз,
  * закрыл вопрос сразу для трёх станций).
  */
-export function UziRitualScreen({ onBack, onOpenStation }: Props) {
+export function UziRitualScreen({ onBack, onOpenStation, onOpenActionPattern }: Props) {
   const stations = STATIONS.filter((s) => UZI_RITUAL_STATIONS.includes(s.id));
 
   return (
@@ -24,9 +25,14 @@ export function UziRitualScreen({ onBack, onOpenStation }: Props) {
         <h1 className="text-xl font-semibold">УЗИ-ритуал</h1>
       </div>
 
-      <p className="mb-4 text-sm text-on-surface-variant">
+      <p className="mb-3 text-sm text-on-surface-variant">
         Эти 10 пунктов дословно одинаковы во всех трёх УЗИ-станциях — выучи один раз, а не переучивай на каждой.
       </p>
+
+      <button onClick={onOpenActionPattern} className="mb-4 flex items-center gap-1.5 text-xs font-semibold text-primary">
+        <Icon name="grid_view" size={14} />
+        Цветовая карта действий рабочей части →
+      </button>
 
       <div className="mb-4 flex flex-wrap gap-2">
         {stations.map((s) => (

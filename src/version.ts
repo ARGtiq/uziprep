@@ -1,4 +1,4 @@
-export const APP_VERSION = '1.6.0';
+export const APP_VERSION = '1.7.0';
 
 export interface ChangelogEntry {
   version: string;
@@ -13,6 +13,14 @@ export interface ChangelogEntry {
  * закэшированной старой.
  */
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '1.7.0',
+    date: '2026-07-20',
+    items: [
+      'Новый режим "Цветовая карта действий" — все три УЗИ-станции на одном экране, свайп по горизонтали, каждый пункт целиком подсвечен фоном по типу действия (не только глагол)',
+      'Вход — из раздела "УЗИ-ритуал"',
+    ],
+  },
   {
     version: '1.6.0',
     date: '2026-07-20',
