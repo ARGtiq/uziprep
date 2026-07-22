@@ -1,5 +1,10 @@
 import { useEffect, useState } from 'react';
 import { getNextAction, type NextAction } from '@/lib/nextAction';
+import { findBlockContent } from '@/lib/findBlock';
+import { recordBlockResult } from '@/lib/mastery';
+import { addXp } from '@/lib/streakAndXp';
+import { SingleBlockOrdering, type SingleBlockResult } from '@/components/SingleBlockOrdering';
+import { Confetti } from '@/components/Confetti';
 import { Icon } from '@/components/Icon';
 
 interface Props {
@@ -26,10 +31,16 @@ const KIND_COLOR: Record<NextAction['kind'], string> = {
 
 /**
  * Единая рекомендация "что делать дальше" вместо трёх разрозненных
- * виджетов на главном экране — один вход, один явный CTA.
+ * виджетов на главном экране — один вход, один явный CTA. Для
+ * просроченного блока можно потренировать прямо тут, инлайн, без
+ * перехода на страницу станции (findBlockContent достаёт реальные
+ * карточки по идентификаторам из mastery).
  */
 export function NextActionCard({ onOpenWeakSpots, onOpenStation, onGoExam }: Props) {
   const [action, setAction] = useState<NextAction | null>(null);
+  const [showInline, setShowInline] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [inlineDone, setInlineDone] = useState(false);
 
   useEffect(() => {
     getNextAction().then(setAction);
@@ -41,10 +52,21 @@ export function NextActionCard({ onOpenWeakSpots, onOpenStation, onGoExam }: Pro
     if (!action) return;
     if (action.kind === 'due-block' && action.stationId) onOpenStation(action.stationId);
     else if (action.kind === 'wrong-questions') onGoExam();
-    else if (action.kind === 'due-block') onOpenWeakSpots();
+  }
+
+  function handleInlineChecked(result: SingleBlockResult) {
+    if (!action?.stationId || !action.scenarioName || !action.blockName) return;
+    recordBlockResult(action.stationId, action.scenarioName, action.blockName, result.mistakes === 0);
+    addXp(action.stationId, result.mistakes === 0 ? 5 : 1);
+    if (result.mistakes === 0) setShowConfetti(true);
+    setInlineDone(true);
   }
 
   const clickable = action.kind === 'due-block' || action.kind === 'wrong-questions';
+  const inlineBlock =
+    showInline && action.stationId && action.scenarioName && action.blockName
+      ? findBlockContent(action.stationId, action.scenarioName, action.blockName)
+      : null;
 
   const content = (
     <>
@@ -59,13 +81,33 @@ export function NextActionCard({ onOpenWeakSpots, onOpenStation, onGoExam }: Pro
     </>
   );
 
-  if (!clickable) {
-    return <div className="mb-3 flex items-center gap-3 rounded-m3-md bg-surface-container-low p-3.5">{content}</div>;
-  }
-
   return (
-    <button onClick={handleClick} className="mb-3 flex w-full items-center gap-3 rounded-m3-md bg-surface-container-low p-3.5">
-      {content}
-    </button>
+    <div className="mb-3 rounded-m3-md bg-surface-container-low p-3.5">
+      {showConfetti && <Confetti onDone={() => setShowConfetti(false)} />}
+      {clickable ? (
+        <button onClick={handleClick} className="flex w-full items-center gap-3 text-left">
+          {content}
+        </button>
+      ) : (
+        <div className="flex items-center gap-3">{content}</div>
+      )}
+
+      {action.kind === 'due-block' && action.blockName && (
+        <button
+          onClick={() => setShowInline((v) => !v)}
+          className="mt-2.5 flex items-center gap-1 text-xs font-semibold text-primary"
+        >
+          <Icon name={showInline ? 'cancel' : 'grid_view'} size={12} />
+          {showInline ? 'Свернуть' : 'Тренировать прямо здесь'}
+        </button>
+      )}
+
+      {inlineBlock && !inlineDone && (
+        <div className="mt-3">
+          <SingleBlockOrdering block={inlineBlock} resetKey={inlineBlock.block} onChecked={handleInlineChecked} showAdvanceControls={false} />
+        </div>
+      )}
+      {inlineDone && <p className="mt-3 text-center text-xs text-on-surface-variant">Готово — обновится при следующем заходе на главную</p>}
+    </div>
   );
 }

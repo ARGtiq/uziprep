@@ -10,6 +10,8 @@ export interface NextAction {
   title: string;
   subtitle: string;
   stationId?: string;
+  scenarioName?: string;
+  blockName?: string;
 }
 
 /**
@@ -27,6 +29,8 @@ export async function getNextAction(): Promise<NextAction> {
       title: `Пора повторить: ${first.blockName}`,
       subtitle: dueBlocks.length > 1 ? `Ещё ${dueBlocks.length - 1} блоков просрочено` : 'Один блок ждёт повторения',
       stationId: first.stationId,
+      scenarioName: first.scenarioName,
+      blockName: first.blockName,
     };
   }
 

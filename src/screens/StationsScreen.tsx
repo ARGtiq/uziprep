@@ -18,9 +18,10 @@ interface Props {
   onOpenWeakSpots: () => void;
   onOpenMnemonics: () => void;
   onOpenCharacter: () => void;
+  onOpenOverview: () => void;
 }
 
-export function StationsScreen({ onOpenStation, onGoExam, onOpenWeakSpots, onOpenMnemonics, onOpenCharacter }: Props) {
+export function StationsScreen({ onOpenStation, onGoExam, onOpenWeakSpots, onOpenMnemonics, onOpenCharacter, onOpenOverview }: Props) {
   const streak = getStreak();
   const [showCharacterOnHome, setShowCharacterOnHome] = useState(getShowOnHome);
   const character = hasCharacter() ? getCharacter() : null;
@@ -113,6 +114,20 @@ export function StationsScreen({ onOpenStation, onGoExam, onOpenWeakSpots, onOpe
         </div>
         <Icon name="arrow_forward" size={16} className="shrink-0 text-on-surface-variant" />
       </div>
+
+      <button
+        onClick={onOpenOverview}
+        className="mb-3 flex w-full items-center gap-3 rounded-m3-md bg-secondary-container p-3.5 text-left"
+      >
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-m3-md bg-primary text-on-primary">
+          <Icon name="grid_view" size={20} />
+        </span>
+        <div className="flex-1">
+          <b className="text-sm text-on-secondary-container">Обзор станций</b>
+          <div className="text-xs text-on-surface-variant">Общая рамка + пролистай различия — быстрое повторение без тренировки</div>
+        </div>
+        <Icon name="arrow_forward" size={16} className="shrink-0 text-on-surface-variant" />
+      </button>
 
       <div className="mb-3 flex gap-2">
         <button onClick={onOpenWeakSpots} className="flex flex-1 items-center justify-center gap-1 rounded-full border border-outline-variant py-2 text-xs font-semibold text-on-surface-variant">

@@ -6,6 +6,8 @@ import { WeakSpotsScreen } from '@/screens/WeakSpotsScreen';
 import { MnemonicsScreen } from '@/screens/MnemonicsScreen';
 import { StatsDashboardScreen } from '@/screens/StatsDashboardScreen';
 import { CharacterGate } from '@/screens/CharacterGate';
+import { StationOverviewScreen } from '@/screens/StationOverviewScreen';
+import { CheatSheetScreen } from '@/screens/CheatSheetScreen';
 import { ExamScreen } from '@/screens/ExamScreen';
 import { AiTutorScreen } from '@/screens/AiTutorScreen';
 import { ProfileScreen } from '@/screens/ProfileScreen';
@@ -28,7 +30,9 @@ type StationsView =
   | { mode: 'weakspots' }
   | { mode: 'mnemonics' }
   | { mode: 'stats' }
-  | { mode: 'character' };
+  | { mode: 'character' }
+  | { mode: 'overview' }
+  | { mode: 'cheatsheet' };
 
 export default function App() {
   const [tab, setTab] = useState<Tab>('stations');
@@ -144,6 +148,8 @@ export default function App() {
         {tab === 'stations' && stationsView.mode === 'character' && (
           <CharacterGate onBack={goBack} onOpenStats={() => setStationsView({ mode: 'stats' })} />
         )}
+        {tab === 'stations' && stationsView.mode === 'overview' && <StationOverviewScreen onBack={goBack} onOpenCheatSheet={() => setStationsView({ mode: 'cheatsheet' })} />}
+        {tab === 'stations' && stationsView.mode === 'cheatsheet' && <CheatSheetScreen onBack={goBack} />}
         {tab === 'stations' && stationsView.mode === 'list' && (
           <StationsScreen
             onOpenStation={openStation}
@@ -151,6 +157,7 @@ export default function App() {
             onOpenWeakSpots={() => setStationsView({ mode: 'weakspots' })}
             onOpenMnemonics={() => setStationsView({ mode: 'mnemonics' })}
             onOpenCharacter={() => setStationsView({ mode: 'character' })}
+            onOpenOverview={() => setStationsView({ mode: 'overview' })}
           />
         )}
         {tab === 'exam' && <ExamScreen />}

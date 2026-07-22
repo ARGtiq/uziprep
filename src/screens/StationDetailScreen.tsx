@@ -5,6 +5,7 @@ import { addXp } from '@/lib/streakAndXp';
 import { ScenarioComparisonView } from '@/components/ScenarioComparisonView';
 import { WhyThisStepButton } from '@/components/WhyThisStepButton';
 import { IntroDialogueBox } from '@/components/IntroDialogueBox';
+import { boldFirstWord } from '@/lib/textDisplay';
 import { MnemonicButton } from '@/components/MnemonicButton';
 import { AudioNarration } from '@/components/AudioNarration';
 import { Confetti } from '@/components/Confetti';
@@ -190,11 +191,16 @@ export function StationDetailScreen({ stationId, onBack }: Props) {
                   </div>
                   <MnemonicButton stationId={stationId} stationTitle={station.title} blockName={block.block} itemTexts={block.items.map((i) => i.text)} />
                   {block.items.map((step, i) => (
-                    <div key={step.num} className="flex flex-wrap items-start gap-3 border-b border-outline-variant py-3 last:border-none">
+                    <div
+                      key={step.num}
+                      className={`flex flex-wrap items-start gap-3 border-b border-outline-variant py-3 last:border-none ${
+                        i > 0 && i % 4 === 0 ? 'mt-1.5 border-t-2 border-t-outline-variant pt-3' : ''
+                      }`}
+                    >
                       <div className="flex h-[24px] w-[24px] shrink-0 items-center justify-center rounded-full bg-secondary-container text-[11px] font-semibold text-on-secondary-container">
                         {step.num}
                       </div>
-                      <p className="min-w-0 flex-1 text-sm leading-relaxed">{step.text}</p>
+                      <p className="min-w-0 flex-1 text-sm leading-relaxed">{boldFirstWord(step.text)}</p>
                       <WhyThisStepButton
                         stationId={stationId}
                         stationTitle={station.title}
