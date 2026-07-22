@@ -8,6 +8,8 @@ import { StatsDashboardScreen } from '@/screens/StatsDashboardScreen';
 import { CharacterGate } from '@/screens/CharacterGate';
 import { StationOverviewScreen } from '@/screens/StationOverviewScreen';
 import { CheatSheetScreen } from '@/screens/CheatSheetScreen';
+import { UziRitualScreen } from '@/screens/UziRitualScreen';
+import { OskeStructureScreen } from '@/screens/OskeStructureScreen';
 import { ExamScreen } from '@/screens/ExamScreen';
 import { AiTutorScreen } from '@/screens/AiTutorScreen';
 import { ProfileScreen } from '@/screens/ProfileScreen';
@@ -32,7 +34,9 @@ type StationsView =
   | { mode: 'stats' }
   | { mode: 'character' }
   | { mode: 'overview' }
-  | { mode: 'cheatsheet' };
+  | { mode: 'cheatsheet' }
+  | { mode: 'uzi-ritual' }
+  | { mode: 'oske-structure' };
 
 export default function App() {
   const [tab, setTab] = useState<Tab>('stations');
@@ -150,6 +154,8 @@ export default function App() {
         )}
         {tab === 'stations' && stationsView.mode === 'overview' && <StationOverviewScreen onBack={goBack} onOpenCheatSheet={() => setStationsView({ mode: 'cheatsheet' })} />}
         {tab === 'stations' && stationsView.mode === 'cheatsheet' && <CheatSheetScreen onBack={goBack} />}
+        {tab === 'stations' && stationsView.mode === 'uzi-ritual' && <UziRitualScreen onBack={goBack} onOpenStation={openStation} />}
+        {tab === 'stations' && stationsView.mode === 'oske-structure' && <OskeStructureScreen onBack={goBack} />}
         {tab === 'stations' && stationsView.mode === 'list' && (
           <StationsScreen
             onOpenStation={openStation}
@@ -158,6 +164,8 @@ export default function App() {
             onOpenMnemonics={() => setStationsView({ mode: 'mnemonics' })}
             onOpenCharacter={() => setStationsView({ mode: 'character' })}
             onOpenOverview={() => setStationsView({ mode: 'overview' })}
+            onOpenUziRitual={() => setStationsView({ mode: 'uzi-ritual' })}
+            onOpenOskeStructure={() => setStationsView({ mode: 'oske-structure' })}
           />
         )}
         {tab === 'exam' && <ExamScreen />}

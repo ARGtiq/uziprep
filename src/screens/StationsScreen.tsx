@@ -19,9 +19,11 @@ interface Props {
   onOpenMnemonics: () => void;
   onOpenCharacter: () => void;
   onOpenOverview: () => void;
+  onOpenUziRitual: () => void;
+  onOpenOskeStructure: () => void;
 }
 
-export function StationsScreen({ onOpenStation, onGoExam, onOpenWeakSpots, onOpenMnemonics, onOpenCharacter, onOpenOverview }: Props) {
+export function StationsScreen({ onOpenStation, onGoExam, onOpenWeakSpots, onOpenMnemonics, onOpenCharacter, onOpenOverview, onOpenUziRitual, onOpenOskeStructure }: Props) {
   const streak = getStreak();
   const [showCharacterOnHome, setShowCharacterOnHome] = useState(getShowOnHome);
   const character = hasCharacter() ? getCharacter() : null;
@@ -128,6 +130,15 @@ export function StationsScreen({ onOpenStation, onGoExam, onOpenWeakSpots, onOpe
         </div>
         <Icon name="arrow_forward" size={16} className="shrink-0 text-on-surface-variant" />
       </button>
+
+      <div className="mb-3 flex gap-2">
+        <button onClick={onOpenUziRitual} className="flex flex-1 items-center justify-center gap-1 rounded-full border border-outline-variant py-2 text-xs font-semibold text-on-surface-variant">
+          УЗИ-ритуал
+        </button>
+        <button onClick={onOpenOskeStructure} className="flex flex-1 items-center justify-center gap-1 rounded-full border border-outline-variant py-2 text-xs font-semibold text-on-surface-variant">
+          Как устроен ОСКЭ
+        </button>
+      </div>
 
       <div className="mb-3 flex gap-2">
         <button onClick={onOpenWeakSpots} className="flex flex-1 items-center justify-center gap-1 rounded-full border border-outline-variant py-2 text-xs font-semibold text-on-surface-variant">

@@ -37,3 +37,19 @@ export function detectActionVerb(text: string): { verb: string; category: VerbCa
   const category = VERB_CATEGORY[firstWord];
   return category ? { verb: firstWord, category } : null;
 }
+
+export const CATEGORY_LABEL: Record<VerbCategory, string> = {
+  measure: 'измерение',
+  visualize: 'визуализация',
+  evaluate: 'оценка',
+};
+
+/** Считает, сколько пунктов блока попадают в каждую из 3 групп действия — для свёрнутой легенды-подсказки над блоком. */
+export function summarizeBlockVerbs(texts: string[]): { category: VerbCategory; count: number }[] {
+  const counts: Record<VerbCategory, number> = { measure: 0, visualize: 0, evaluate: 0 };
+  for (const t of texts) {
+    const detected = detectActionVerb(t);
+    if (detected) counts[detected.category]++;
+  }
+  return (Object.keys(counts) as VerbCategory[]).map((c) => ({ category: c, count: counts[c] })).filter((c) => c.count > 0);
+}

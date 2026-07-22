@@ -6,6 +6,7 @@ import { ScenarioComparisonView } from '@/components/ScenarioComparisonView';
 import { WhyThisStepButton } from '@/components/WhyThisStepButton';
 import { IntroDialogueBox } from '@/components/IntroDialogueBox';
 import { boldFirstWord } from '@/lib/textDisplay';
+import { summarizeBlockVerbs, CATEGORY_COLOR, CATEGORY_LABEL } from '@/lib/actionVerbs';
 import { MnemonicButton } from '@/components/MnemonicButton';
 import { AudioNarration } from '@/components/AudioNarration';
 import { Confetti } from '@/components/Confetti';
@@ -184,11 +185,29 @@ export function StationDetailScreen({ stationId, onBack }: Props) {
               </p>
               <AudioNarration steps={flatStepItems} />
               {station.introDialogue && <IntroDialogueBox rows={station.introDialogue} />}
-              {activeStepBlocks.map((block) => (
+              {activeStepBlocks.map((block) => {
+                const verbSummary = summarizeBlockVerbs(block.items.map((i) => i.text));
+                return (
                 <div key={block.block} className="mb-4">
                   <div className="mb-1.5 flex items-center justify-between">
                     <h2 className="text-sm font-semibold text-on-surface-variant">{block.block}</h2>
                   </div>
+                  {verbSummary.length > 0 && (
+                    <details className="mb-2">
+                      <summary className="cursor-pointer list-none text-[11px] text-on-surface-variant opacity-70">
+                        <span className="mr-1 inline-block [details[open]_&]:rotate-90">›</span>
+                        {verbSummary.length} {verbSummary.length === 1 ? 'группа' : 'группы'} действий в блоке
+                      </summary>
+                      <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 pl-3 text-[11px] text-on-surface-variant">
+                        {verbSummary.map(({ category, count }) => (
+                          <span key={category} className="flex items-center gap-1">
+                            <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: CATEGORY_COLOR[category] }} />
+                            {CATEGORY_LABEL[category]} ({count})
+                          </span>
+                        ))}
+                      </div>
+                    </details>
+                  )}
                   <MnemonicButton stationId={stationId} stationTitle={station.title} blockName={block.block} itemTexts={block.items.map((i) => i.text)} />
                   {block.items.map((step, i) => (
                     <div
@@ -213,7 +232,8 @@ export function StationDetailScreen({ stationId, onBack }: Props) {
                     </div>
                   ))}
                 </div>
-              ))}
+                );
+              })}
             </>
           )}
 
