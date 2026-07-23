@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import type { StationScenario } from '@/types/station';
 import { compareSteps } from '@/lib/scenarioComparison';
-import { boldFirstWord } from '@/lib/textDisplay';
+import { boldFirstWord, shortenStep } from '@/lib/textDisplay';
 import { Icon } from '@/components/Icon';
 
 interface Props {
@@ -55,7 +55,7 @@ export function StationOverviewCarousel({ scenarios }: Props) {
             {common.map((step) => (
               <div key={step.num} className="flex gap-2.5 border-t border-outline-variant/50 py-2 first:border-none">
                 <span className="w-6 shrink-0 text-xs text-on-surface-variant">{step.num}</span>
-                <p className="text-sm leading-relaxed">{boldFirstWord(step.text)}</p>
+                <p className="text-sm leading-relaxed">{boldFirstWord(shortenStep(step.text), step.text)}</p>
               </div>
             ))}
           </div>
@@ -81,7 +81,7 @@ export function StationOverviewCarousel({ scenarios }: Props) {
               card.items.map((step) => (
                 <div key={step.num} className="flex gap-2.5 border-b border-outline-variant py-2 last:border-none">
                   <span className="w-6 shrink-0 text-xs text-on-surface-variant">{step.num}</span>
-                  <p className="text-sm leading-relaxed">{boldFirstWord(step.text)}</p>
+                  <p className="text-sm leading-relaxed">{boldFirstWord(shortenStep(step.text), step.text)}</p>
                 </div>
               ))
             )}
