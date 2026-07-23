@@ -1,4 +1,4 @@
-export const APP_VERSION = '1.7.0';
+export const APP_VERSION = '1.8.0';
 
 export interface ChangelogEntry {
   version: string;
@@ -13,6 +13,14 @@ export interface ChangelogEntry {
  * закэшированной старой.
  */
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '1.8.0',
+    date: '2026-07-20',
+    items: [
+      'Новая вкладка "План" — пошаговый порядок изучения по убыванию отдачи (УЗИ-ритуал → форма ОСКЭ → грамматика действий → станции по одной → БСЛР), с отметками пройденного',
+      'Реплики члена АПК теперь привязаны к конкретным шагам алгоритма (мельче шрифтом прямо под шагом) — не только в общем блоке сверху',
+    ],
+  },
   {
     version: '1.7.0',
     date: '2026-07-20',

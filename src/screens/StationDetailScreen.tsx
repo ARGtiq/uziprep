@@ -5,6 +5,7 @@ import { addXp } from '@/lib/streakAndXp';
 import { ScenarioComparisonView } from '@/components/ScenarioComparisonView';
 import { WhyThisStepButton } from '@/components/WhyThisStepButton';
 import { IntroDialogueBox } from '@/components/IntroDialogueBox';
+import { matchIntroToStep, unmatchedIntroRows } from '@/lib/matchIntroDialogue';
 import { boldFirstWord } from '@/lib/textDisplay';
 import { summarizeBlockVerbs, CATEGORY_COLOR, CATEGORY_LABEL } from '@/lib/actionVerbs';
 import { MnemonicButton } from '@/components/MnemonicButton';
@@ -184,7 +185,14 @@ export function StationDetailScreen({ stationId, onBack }: Props) {
                 Экзамена.
               </p>
               <AudioNarration steps={flatStepItems} />
-              {station.introDialogue && <IntroDialogueBox rows={station.introDialogue} />}
+              {station.introDialogue && (
+                <IntroDialogueBox
+                  rows={unmatchedIntroRows(
+                    activeStepBlocks.flatMap((b) => b.items.map((i) => i.text)),
+                    station.introDialogue,
+                  )}
+                />
+              )}
               {activeStepBlocks.map((block) => {
                 const verbSummary = summarizeBlockVerbs(block.items.map((i) => i.text));
                 return (
@@ -209,7 +217,9 @@ export function StationDetailScreen({ stationId, onBack }: Props) {
                     </details>
                   )}
                   <MnemonicButton stationId={stationId} stationTitle={station.title} blockName={block.block} itemTexts={block.items.map((i) => i.text)} />
-                  {block.items.map((step, i) => (
+                  {block.items.map((step, i) => {
+                    const matchedIntro = matchIntroToStep(step.text, station.introDialogue ?? []);
+                    return (
                     <div
                       key={step.num}
                       className={`flex flex-wrap items-start gap-3 border-b border-outline-variant py-3 last:border-none ${
@@ -229,8 +239,18 @@ export function StationDetailScreen({ stationId, onBack }: Props) {
                         prevStep={block.items[i - 1]?.text}
                         nextStep={block.items[i + 1]?.text}
                       />
+                      {matchedIntro.length > 0 && (
+                        <div className="w-full basis-full pl-9">
+                          {matchedIntro.map((row, j) => (
+                            <p key={j} className="text-xs italic text-on-surface-variant">
+                              {row.text}
+                            </p>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
                 );
               })}

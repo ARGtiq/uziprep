@@ -36,6 +36,7 @@ const LS_KEYS_TO_BACKUP = [
   'uziprep.character',
   'uziprep.character.showOnHome',
   'uziprep.fever.best',
+  'uziprep.studyPlan.done',
 ];
 
 export async function exportBackup(): Promise<BackupData> {

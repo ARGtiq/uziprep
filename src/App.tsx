@@ -11,6 +11,7 @@ import { CheatSheetScreen } from '@/screens/CheatSheetScreen';
 import { UziRitualScreen } from '@/screens/UziRitualScreen';
 import { OskeStructureScreen } from '@/screens/OskeStructureScreen';
 import { ActionPatternScreen } from '@/screens/ActionPatternScreen';
+import { StudyPlanScreen } from '@/screens/StudyPlanScreen';
 import { ExamScreen } from '@/screens/ExamScreen';
 import { AiTutorScreen } from '@/screens/AiTutorScreen';
 import { ProfileScreen } from '@/screens/ProfileScreen';
@@ -122,6 +123,12 @@ export default function App() {
     setLastStationId(id);
   }
 
+  /** Переход из вкладки "План" сразу в конкретный подэкран вкладки "Станции", минуя список. */
+  function goToStationsSubview(view: StationsView) {
+    setTab('stations');
+    setStationsView(view);
+  }
+
   const lastStation = lastStationId ? getStationById(lastStationId) : undefined;
 
   return (
@@ -175,6 +182,17 @@ export default function App() {
         )}
         {tab === 'exam' && <ExamScreen />}
         {tab === 'ai' && <AiTutorScreen stationId={lastStation?.id} stationTitle={lastStation?.title} />}
+        {tab === 'plan' && (
+          <StudyPlanScreen
+            onOpenUziRitual={() => goToStationsSubview({ mode: 'uzi-ritual' })}
+            onOpenOskeStructure={() => goToStationsSubview({ mode: 'oske-structure' })}
+            onOpenActionPattern={() => goToStationsSubview({ mode: 'action-pattern' })}
+            onOpenStation={(id) => {
+              setTab('stations');
+              openStation(id);
+            }}
+          />
+        )}
         {tab === 'profile' && <ProfileScreen />}
       </main>
       <NavBar active={tab} onChange={changeTab} variant="bottom" />
