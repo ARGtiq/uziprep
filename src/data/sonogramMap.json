@@ -1,0 +1,528 @@
+{
+ "echo::plax": [
+  {
+   "file": "1.jpeg",
+   "stepNums": [
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18
+   ]
+  },
+  {
+   "file": "2.jpeg",
+   "stepNums": [
+    19
+   ]
+  },
+  {
+   "file": "3.png",
+   "stepNums": [
+    20
+   ]
+  },
+  {
+   "file": "4.jpeg",
+   "stepNums": [
+    21
+   ]
+  },
+  {
+   "file": "5.png",
+   "stepNums": [
+    22
+   ]
+  },
+  {
+   "file": "6.jpeg",
+   "stepNums": [
+    23
+   ]
+  },
+  {
+   "file": "7.png",
+   "stepNums": [
+    24
+   ]
+  },
+  {
+   "file": "8.jpeg",
+   "stepNums": [
+    25
+   ]
+  },
+  {
+   "file": "9.png",
+   "stepNums": [
+    26
+   ]
+  },
+  {
+   "file": "10.jpeg",
+   "stepNums": [
+    27
+   ]
+  },
+  {
+   "file": "11.jpeg",
+   "stepNums": [
+    28
+   ]
+  },
+  {
+   "file": "12.jpeg",
+   "stepNums": [
+    29
+   ]
+  }
+ ],
+ "echo::psax-aortic": [
+  {
+   "file": "1.png",
+   "stepNums": [
+    11,
+    12
+   ]
+  },
+  {
+   "file": "2.jpeg",
+   "stepNums": [
+    13,
+    14
+   ]
+  },
+  {
+   "file": "3.png",
+   "stepNums": [
+    15
+   ]
+  },
+  {
+   "file": "4.png",
+   "stepNums": [
+    16
+   ]
+  },
+  {
+   "file": "5.png",
+   "stepNums": [
+    17
+   ]
+  },
+  {
+   "file": "6.png",
+   "stepNums": [
+    18
+   ]
+  },
+  {
+   "file": "7.jpeg",
+   "stepNums": [
+    19,
+    20
+   ]
+  },
+  {
+   "file": "8.jpeg",
+   "stepNums": [
+    21
+   ]
+  },
+  {
+   "file": "9.png",
+   "stepNums": [
+    22
+   ]
+  },
+  {
+   "file": "10.png",
+   "stepNums": [
+    23
+   ]
+  },
+  {
+   "file": "11.jpeg",
+   "stepNums": [
+    24
+   ]
+  },
+  {
+   "file": "12.jpeg",
+   "stepNums": [
+    25
+   ]
+  }
+ ],
+ "echo::psax-lv": [
+  {
+   "file": "1.jpeg",
+   "stepNums": [
+    11,
+    12,
+    13
+   ]
+  },
+  {
+   "file": "2.png",
+   "stepNums": [
+    14,
+    15,
+    16
+   ]
+  },
+  {
+   "file": "3.png",
+   "stepNums": [
+    16,
+    17
+   ]
+  }
+ ],
+ "echo::apical-4ch": [
+  {
+   "file": "1.png",
+   "stepNums": [
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17
+   ]
+  },
+  {
+   "file": "2.png",
+   "stepNums": [
+    18
+   ]
+  },
+  {
+   "file": "3.jpeg",
+   "stepNums": [
+    19
+   ]
+  },
+  {
+   "file": "4.png",
+   "stepNums": [
+    20,
+    22
+   ]
+  },
+  {
+   "file": "5.jpeg",
+   "stepNums": [
+    21
+   ]
+  },
+  {
+   "file": "6.jpeg",
+   "stepNums": [
+    23
+   ]
+  },
+  {
+   "file": "7.jpeg",
+   "stepNums": [
+    24
+   ]
+  },
+  {
+   "file": "8.png",
+   "stepNums": [
+    25
+   ]
+  },
+  {
+   "file": "9.png",
+   "stepNums": [
+    26
+   ]
+  }
+ ],
+ "abdomen::liver": [
+  {
+   "file": "1.jpeg",
+   "stepNums": [
+    11
+   ]
+  },
+  {
+   "file": "2.jpeg",
+   "stepNums": [
+    12
+   ]
+  },
+  {
+   "file": "3.png",
+   "stepNums": [
+    13,
+    14,
+    15
+   ]
+  },
+  {
+   "file": "4.jpeg",
+   "stepNums": [
+    16
+   ]
+  },
+  {
+   "file": "5.jpeg",
+   "stepNums": [
+    17
+   ]
+  },
+  {
+   "file": "6.png",
+   "stepNums": [
+    18
+   ]
+  },
+  {
+   "file": "7.jpeg",
+   "stepNums": [
+    19
+   ]
+  },
+  {
+   "file": "8.jpeg",
+   "stepNums": [
+    20,
+    21,
+    22
+   ]
+  },
+  {
+   "file": "10.jpeg",
+   "stepNums": [
+    24,
+    25
+   ]
+  },
+  {
+   "file": "11.png",
+   "stepNums": [
+    26
+   ]
+  },
+  {
+   "file": "12.jpeg",
+   "stepNums": [
+    27,
+    28
+   ]
+  }
+ ],
+ "abdomen::pancreas": [
+  {
+   "file": "1.png",
+   "stepNums": [
+    11,
+    12,
+    15,
+    16,
+    18,
+    19,
+    20
+   ]
+  },
+  {
+   "file": "2.png",
+   "stepNums": [
+    13,
+    14
+   ]
+  },
+  {
+   "file": "3.png",
+   "stepNums": [
+    17
+   ]
+  },
+  {
+   "file": "4.png",
+   "stepNums": [
+    21
+   ]
+  },
+  {
+   "file": "5.png",
+   "stepNums": [
+    22
+   ]
+  },
+  {
+   "file": "6.png",
+   "stepNums": [
+    23
+   ]
+  },
+  {
+   "file": "7.png",
+   "stepNums": [
+    24
+   ]
+  }
+ ],
+ "abdomen::right-kidney": [
+  {
+   "file": "1.png",
+   "stepNums": [
+    11,
+    12,
+    13,
+    14
+   ]
+  },
+  {
+   "file": "2.png",
+   "stepNums": [
+    15
+   ]
+  },
+  {
+   "file": "3.png",
+   "stepNums": [
+    16,
+    17,
+    18,
+    20
+   ]
+  },
+  {
+   "file": "4.png",
+   "stepNums": [
+    19
+   ]
+  },
+  {
+   "file": "5.jpeg",
+   "stepNums": [
+    21,
+    22,
+    23
+   ]
+  },
+  {
+   "file": "6.jpeg",
+   "stepNums": [
+    24
+   ]
+  },
+  {
+   "file": "7.png",
+   "stepNums": [
+    25
+   ]
+  },
+  {
+   "file": "8.png",
+   "stepNums": [
+    26
+   ]
+  },
+  {
+   "file": "9.png",
+   "stepNums": [
+    27,
+    28
+   ]
+  },
+  {
+   "file": "10.png",
+   "stepNums": [
+    29
+   ]
+  },
+  {
+   "file": "11.png",
+   "stepNums": [
+    30
+   ]
+  }
+ ],
+ "abdomen::left-kidney": [
+  {
+   "file": "1.jpeg",
+   "stepNums": [
+    11,
+    12,
+    16,
+    17,
+    18,
+    19,
+    20,
+    22,
+    23
+   ]
+  },
+  {
+   "file": "2.png",
+   "stepNums": [
+    13,
+    14
+   ]
+  },
+  {
+   "file": "3.jpeg",
+   "stepNums": [
+    15
+   ]
+  },
+  {
+   "file": "4.jpeg",
+   "stepNums": [
+    20
+   ]
+  },
+  {
+   "file": "5.png",
+   "stepNums": [
+    21
+   ]
+  },
+  {
+   "file": "6.jpeg",
+   "stepNums": [
+    24
+   ]
+  },
+  {
+   "file": "7.png",
+   "stepNums": [
+    25
+   ]
+  },
+  {
+   "file": "8.png",
+   "stepNums": [
+    26
+   ]
+  },
+  {
+   "file": "9.png",
+   "stepNums": [
+    27,
+    28
+   ]
+  },
+  {
+   "file": "10.jpeg",
+   "stepNums": [
+    29
+   ]
+  },
+  {
+   "file": "11.jpeg",
+   "stepNums": [
+    30
+   ]
+  }
+ ]
+}

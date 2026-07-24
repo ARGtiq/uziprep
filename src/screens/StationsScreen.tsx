@@ -7,6 +7,7 @@ import { IconBadge } from '@/components/IconBadge';
 import { db } from '@/lib/db';
 import { getStreak, getStationXp, levelForXp, getAllXp } from '@/lib/streakAndXp';
 import { NextActionCard } from '@/components/NextActionCard';
+import { PlanBanner } from '@/components/PlanBanner';
 import { CharacterAvatar } from '@/components/CharacterAvatar';
 import { getCharacter, hasCharacter, getShowOnHome, setShowOnHome, levelFromXp, tierFromLevel } from '@/lib/character';
 
@@ -16,14 +17,12 @@ interface Props {
   onOpenStation: (id: string) => void;
   onGoExam: () => void;
   onOpenWeakSpots: () => void;
-  onOpenMnemonics: () => void;
-  onOpenCharacter: () => void;
-  onOpenOverview: () => void;
-  onOpenUziRitual: () => void;
-  onOpenOskeStructure: () => void;
+  onOpenProfile: () => void;
+  onOpenReference: () => void;
+  onOpenPlan: () => void;
 }
 
-export function StationsScreen({ onOpenStation, onGoExam, onOpenWeakSpots, onOpenMnemonics, onOpenCharacter, onOpenOverview, onOpenUziRitual, onOpenOskeStructure }: Props) {
+export function StationsScreen({ onOpenStation, onGoExam, onOpenWeakSpots, onOpenProfile, onOpenReference, onOpenPlan }: Props) {
   const streak = getStreak();
   const [showCharacterOnHome, setShowCharacterOnHome] = useState(getShowOnHome);
   const character = hasCharacter() ? getCharacter() : null;
@@ -79,13 +78,15 @@ export function StationsScreen({ onOpenStation, onGoExam, onOpenWeakSpots, onOpe
         </button>
       </div>
 
+      <PlanBanner onOpen={onOpenPlan} />
+
       <NextActionCard onOpenWeakSpots={onOpenWeakSpots} onOpenStation={onOpenStation} onGoExam={onGoExam} />
 
       <div
         role="button"
         tabIndex={0}
-        onClick={onOpenCharacter}
-        onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onOpenCharacter()}
+        onClick={onOpenProfile}
+        onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onOpenProfile()}
         className="relative mb-3 flex w-full cursor-pointer items-center gap-3 rounded-m3-md bg-surface-container-low p-3.5 text-left"
       >
         {character && showCharacterOnHome ? (
@@ -118,36 +119,22 @@ export function StationsScreen({ onOpenStation, onGoExam, onOpenWeakSpots, onOpe
       </div>
 
       <button
-        onClick={onOpenOverview}
+        onClick={onOpenReference}
         className="mb-3 flex w-full items-center gap-3 rounded-m3-md bg-secondary-container p-3.5 text-left"
       >
         <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-m3-md bg-primary text-on-primary">
           <Icon name="grid_view" size={20} />
         </span>
         <div className="flex-1">
-          <b className="text-sm text-on-secondary-container">Обзор станций</b>
-          <div className="text-xs text-on-surface-variant">Общая рамка + пролистай различия — быстрое повторение без тренировки</div>
+          <b className="text-sm text-on-secondary-container">Справочники</b>
+          <div className="text-xs text-on-surface-variant">Обзор станций, УЗИ-ритуал, устройство ОСКЭ, цветовая карта, мнемоники</div>
         </div>
         <Icon name="arrow_forward" size={16} className="shrink-0 text-on-surface-variant" />
       </button>
 
-      <div className="mb-3 flex gap-2">
-        <button onClick={onOpenUziRitual} className="flex flex-1 items-center justify-center gap-1 rounded-full border border-outline-variant py-2 text-xs font-semibold text-on-surface-variant">
-          УЗИ-ритуал
-        </button>
-        <button onClick={onOpenOskeStructure} className="flex flex-1 items-center justify-center gap-1 rounded-full border border-outline-variant py-2 text-xs font-semibold text-on-surface-variant">
-          Как устроен ОСКЭ
-        </button>
-      </div>
-
-      <div className="mb-3 flex gap-2">
-        <button onClick={onOpenWeakSpots} className="flex flex-1 items-center justify-center gap-1 rounded-full border border-outline-variant py-2 text-xs font-semibold text-on-surface-variant">
-          Слабые места
-        </button>
-        <button onClick={onOpenMnemonics} className="flex flex-1 items-center justify-center gap-1 rounded-full border border-outline-variant py-2 text-xs font-semibold text-on-surface-variant">
-          Мои мнемоники
-        </button>
-      </div>
+      <button onClick={onOpenWeakSpots} className="mb-3 flex w-full items-center justify-center gap-1 rounded-full border border-outline-variant py-2 text-xs font-semibold text-on-surface-variant">
+        Слабые места
+      </button>
 
       <div className="mb-3 flex gap-2 overflow-x-auto pb-1">
         {CATS.map((c) => (

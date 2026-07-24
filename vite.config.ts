@@ -16,11 +16,27 @@ export default defineConfig({
       registerType: 'autoUpdate', // тихое автообновление в фоне — баннер подтверждения убран (не работал стабильно), версия в Профиле + ручная кнопка сброса кэша остаются как проверка/аварийный вариант
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        // Сонограммы (public/sonograms/) намеренно НЕ в принудительном
+        // precache — это ~11 МБ дополнительных картинок, не все из
+        // которых человек вообще откроет. Форсировать их загрузку при
+        // каждой установке/обновлении приложения — плохой UX на
+        // мобильном интернете. Вместо этого runtime-кэширование ниже:
+        // подгружаются и кэшируются лениво, при первом реальном
+        // просмотре конкретной картинки.
+        globIgnores: ['sonograms/**'],
         runtimeCaching: [
           {
             urlPattern: ({ url }) => url.pathname.startsWith('/api'),
             handler: 'NetworkFirst',
             options: { cacheName: 'api-cache' },
+          },
+          {
+            urlPattern: ({ url }) => url.pathname.includes('/sonograms/'),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'sonograms-cache',
+              expiration: { maxEntries: 100, maxAgeSeconds: 60 * 60 * 24 * 90 },
+            },
           },
         ],
       },

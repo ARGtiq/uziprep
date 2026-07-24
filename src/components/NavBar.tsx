@@ -1,12 +1,11 @@
 import { Icon, type IconName } from '@/components/Icon';
 
-export type Tab = 'stations' | 'exam' | 'ai' | 'plan' | 'profile';
+export type Tab = 'stations' | 'exam' | 'ai' | 'profile';
 
 const ITEMS: { id: Tab; label: string; icon: IconName }[] = [
   { id: 'stations', label: 'Станции', icon: 'grid_view' },
   { id: 'exam', label: 'Экзамен', icon: 'timer' },
   { id: 'ai', label: 'AI-репетитор', icon: 'auto_awesome' },
-  { id: 'plan', label: 'План', icon: 'workspace_premium' },
   { id: 'profile', label: 'Профиль', icon: 'account_circle' },
 ];
 

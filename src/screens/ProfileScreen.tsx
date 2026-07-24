@@ -29,8 +29,12 @@ import {
   setReminderTime as setReminderTimeStorage,
   tryRegisterPeriodicSync,
 } from '@/lib/reminders';
+import { CharacterAndStats } from '@/components/CharacterAndStats';
+
+type ProfileSubTab = 'character' | 'settings';
 
 export function ProfileScreen() {
+  const [subTab, setSubTab] = useState<ProfileSubTab>('character');
   const { preference, setPreference, seedHex, setSeedHex, sourceKey, setSourceKey, colorfulIcons, setColorfulIcons, fontScale, setFontScale } = useTheme();
   const [characterOnHome, setCharacterOnHome] = useState(getShowOnHome);
   const { session, loading, configured, authError, signInWithEmail, resendMagicLink, signOut } = useAuth();
@@ -207,6 +211,27 @@ export function ProfileScreen() {
     <div>
       <h1 className="mb-4 text-xl font-semibold">Профиль</h1>
 
+      <div className="mb-4 flex gap-2 rounded-full bg-surface-container p-1">
+        {(
+          [
+            ['character', 'Персонаж'],
+            ['settings', 'Настройки'],
+          ] as [ProfileSubTab, string][]
+        ).map(([key, label]) => (
+          <button
+            key={key}
+            onClick={() => setSubTab(key)}
+            className={`flex-1 rounded-full py-2 text-sm font-semibold ${subTab === key ? 'bg-primary text-on-primary' : 'text-on-surface-variant'}`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {subTab === 'character' && <CharacterAndStats />}
+
+      {subTab === 'settings' && (
+        <>
       {!configured && (
         <form onSubmit={handleSaveSupabase} className="mb-4 rounded-m3-md bg-secondary-container p-3.5 text-on-secondary-container">
           <b className="mb-1 block text-sm">Supabase не настроен</b>
@@ -674,6 +699,8 @@ export function ProfileScreen() {
       >
         Версия старая / что-то не так — принудительно обновить
       </button>
+        </>
+      )}
     </div>
   );
 }

@@ -3,14 +3,7 @@ import { NavBar, type Tab } from '@/components/NavBar';
 import { StationsScreen } from '@/screens/StationsScreen';
 import { StationDetailScreen } from '@/screens/StationDetailScreen';
 import { WeakSpotsScreen } from '@/screens/WeakSpotsScreen';
-import { MnemonicsScreen } from '@/screens/MnemonicsScreen';
-import { StatsDashboardScreen } from '@/screens/StatsDashboardScreen';
-import { CharacterGate } from '@/screens/CharacterGate';
-import { StationOverviewScreen } from '@/screens/StationOverviewScreen';
-import { CheatSheetScreen } from '@/screens/CheatSheetScreen';
-import { UziRitualScreen } from '@/screens/UziRitualScreen';
-import { OskeStructureScreen } from '@/screens/OskeStructureScreen';
-import { ActionPatternScreen } from '@/screens/ActionPatternScreen';
+import { ReferenceScreen, type ReferenceSubTab } from '@/screens/ReferenceScreen';
 import { StudyPlanScreen } from '@/screens/StudyPlanScreen';
 import { ExamScreen } from '@/screens/ExamScreen';
 import { AiTutorScreen } from '@/screens/AiTutorScreen';
@@ -28,18 +21,20 @@ import { OnboardingModal } from '@/components/OnboardingModal';
 import { hasSeenOnboarding } from '@/lib/onboarding';
 import { checkAndNotify } from '@/lib/reminders';
 
+/**
+ * Реструктуризация навигации (см. историю): было 5 вкладок + отдельные
+ * экраны на каждую справочную фичу (обзор/цветовая карта/УЗИ-ритуал/
+ * как устроен ОСКЭ/мнемоники — 6 разных мест) + отдельные Персонаж и
+ * Статистика. Теперь: 4 вкладки, справочники сведены в один хаб
+ * (ReferenceScreen), Персонаж+Статистика — вкладка внутри Профиля,
+ * План — баннер на главной, а не постоянная вкладка навигации.
+ */
 type StationsView =
   | { mode: 'list' }
   | { mode: 'detail'; stationId: string }
   | { mode: 'weakspots' }
-  | { mode: 'mnemonics' }
-  | { mode: 'stats' }
-  | { mode: 'character' }
-  | { mode: 'overview' }
-  | { mode: 'cheatsheet' }
-  | { mode: 'uzi-ritual' }
-  | { mode: 'oske-structure' }
-  | { mode: 'action-pattern' };
+  | { mode: 'reference'; initialSubTab?: ReferenceSubTab }
+  | { mode: 'plan' };
 
 export default function App() {
   const [tab, setTab] = useState<Tab>('stations');
@@ -72,7 +67,7 @@ export default function App() {
     return () => clearInterval(interval);
   }, []);
 
-  // Раньше переход на "Станция" / "Слабые места" / "Мнемоники" и т.д.
+  // Раньше переход на "Станция" / "Слабые места" / справочники и т.д.
   // никак не трогал историю браузера — аппаратная/жестовая кнопка
   // "назад" на телефоне не находила, куда вернуться внутри приложения,
   // и просто закрывала вкладку/приложение целиком. Теперь при входе в
@@ -123,12 +118,6 @@ export default function App() {
     setLastStationId(id);
   }
 
-  /** Переход из вкладки "План" сразу в конкретный подэкран вкладки "Станции", минуя список. */
-  function goToStationsSubview(view: StationsView) {
-    setTab('stations');
-    setStationsView(view);
-  }
-
   const lastStation = lastStationId ? getStationById(lastStationId) : undefined;
 
   return (
@@ -152,47 +141,29 @@ export default function App() {
         {tab === 'stations' && stationsView.mode === 'weakspots' && (
           <WeakSpotsScreen onOpenStation={openStation} />
         )}
-        {tab === 'stations' && stationsView.mode === 'mnemonics' && (
-          <MnemonicsScreen onBack={goBack} onOpenStation={openStation} />
+        {tab === 'stations' && stationsView.mode === 'reference' && (
+          <ReferenceScreen onBack={goBack} onOpenStation={openStation} initialSubTab={stationsView.initialSubTab} />
         )}
-        {tab === 'stations' && stationsView.mode === 'stats' && (
-          <StatsDashboardScreen onBack={goBack} />
+        {tab === 'stations' && stationsView.mode === 'plan' && (
+          <StudyPlanScreen
+            onOpenUziRitual={() => setStationsView({ mode: 'reference', initialSubTab: 'uzi-ritual' })}
+            onOpenOskeStructure={() => setStationsView({ mode: 'reference', initialSubTab: 'oske-structure' })}
+            onOpenActionPattern={() => setStationsView({ mode: 'reference', initialSubTab: 'action-pattern' })}
+            onOpenStation={openStation}
+          />
         )}
-        {tab === 'stations' && stationsView.mode === 'character' && (
-          <CharacterGate onBack={goBack} onOpenStats={() => setStationsView({ mode: 'stats' })} />
-        )}
-        {tab === 'stations' && stationsView.mode === 'overview' && <StationOverviewScreen onBack={goBack} onOpenCheatSheet={() => setStationsView({ mode: 'cheatsheet' })} />}
-        {tab === 'stations' && stationsView.mode === 'cheatsheet' && <CheatSheetScreen onBack={goBack} />}
-        {tab === 'stations' && stationsView.mode === 'uzi-ritual' && (
-          <UziRitualScreen onBack={goBack} onOpenStation={openStation} onOpenActionPattern={() => setStationsView({ mode: 'action-pattern' })} />
-        )}
-        {tab === 'stations' && stationsView.mode === 'oske-structure' && <OskeStructureScreen onBack={goBack} />}
-        {tab === 'stations' && stationsView.mode === 'action-pattern' && <ActionPatternScreen onBack={goBack} />}
         {tab === 'stations' && stationsView.mode === 'list' && (
           <StationsScreen
             onOpenStation={openStation}
             onGoExam={() => changeTab('exam')}
             onOpenWeakSpots={() => setStationsView({ mode: 'weakspots' })}
-            onOpenMnemonics={() => setStationsView({ mode: 'mnemonics' })}
-            onOpenCharacter={() => setStationsView({ mode: 'character' })}
-            onOpenOverview={() => setStationsView({ mode: 'overview' })}
-            onOpenUziRitual={() => setStationsView({ mode: 'uzi-ritual' })}
-            onOpenOskeStructure={() => setStationsView({ mode: 'oske-structure' })}
+            onOpenProfile={() => changeTab('profile')}
+            onOpenReference={() => setStationsView({ mode: 'reference' })}
+            onOpenPlan={() => setStationsView({ mode: 'plan' })}
           />
         )}
         {tab === 'exam' && <ExamScreen />}
         {tab === 'ai' && <AiTutorScreen stationId={lastStation?.id} stationTitle={lastStation?.title} />}
-        {tab === 'plan' && (
-          <StudyPlanScreen
-            onOpenUziRitual={() => goToStationsSubview({ mode: 'uzi-ritual' })}
-            onOpenOskeStructure={() => goToStationsSubview({ mode: 'oske-structure' })}
-            onOpenActionPattern={() => goToStationsSubview({ mode: 'action-pattern' })}
-            onOpenStation={(id) => {
-              setTab('stations');
-              openStation(id);
-            }}
-          />
-        )}
         {tab === 'profile' && <ProfileScreen />}
       </main>
       <NavBar active={tab} onChange={changeTab} variant="bottom" />

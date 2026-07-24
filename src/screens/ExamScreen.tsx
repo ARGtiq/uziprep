@@ -84,16 +84,9 @@ export function ExamScreen() {
   return (
     <div>
       <div className="mb-3 flex items-center justify-between">
-        <button onClick={() => setMode('examday')} className="flex items-center gap-1.5 text-xs font-semibold text-on-surface-variant">
-          <Icon name="check_circle" size={14} />
-          Чек-лист экзаменационного дня
-        </button>
+        <h1 className="text-xl font-semibold">Экзамен</h1>
         <XpBadge />
       </div>
-      <h1 className="text-xl font-semibold mb-1">Симуляция экзамена</h1>
-      <p className="text-sm text-on-surface-variant mb-5">
-        Смешанный формат: тестовые вопросы и задания "собери порядок" по всем станциям, с общим таймером.
-      </p>
 
       <h2 className="mb-2 text-sm font-semibold text-on-surface-variant">Выберите формат</h2>
       {FORMATS.map((f) => (
@@ -138,20 +131,8 @@ export function ExamScreen() {
       </button>
 
       <button
-        onClick={() => setMode('nonstop')}
-        disabled={availableQuestions === 0}
-        className="mb-2.5 flex w-full items-center gap-3 rounded-m3-md bg-surface-container-low p-3.5 text-left disabled:opacity-40"
-      >
-        <IconBadge icon="check_circle" colorKey="nonstop" />
-        <div>
-          <b className="text-sm">Нон-стоп</b>
-          <div className="text-xs text-on-surface-variant">Весь банк вопросов подряд, без лимита времени ({availableQuestions})</div>
-        </div>
-      </button>
-
-      <button
         onClick={() => setMode('wrong-only')}
-        className="mb-2.5 flex w-full items-center gap-3 rounded-m3-md bg-surface-container-low p-3.5 text-left"
+        className="mb-4 flex w-full items-center gap-3 rounded-m3-md bg-surface-container-low p-3.5 text-left"
       >
         <IconBadge icon="refresh" colorKey="wrong-only" />
         <div>
@@ -160,55 +141,75 @@ export function ExamScreen() {
         </div>
       </button>
 
-      <button
-        onClick={() => setMode('mixed-studied')}
-        disabled={studiedStationIds.length === 0}
-        className="mb-2.5 flex w-full items-center gap-3 rounded-m3-md bg-surface-container-low p-3.5 text-left disabled:opacity-40"
-      >
-        <IconBadge icon="workspace_premium" colorKey="mixed-studied" />
-        <div>
-          <b className="text-sm">По пройденным</b>
-          <div className="text-xs text-on-surface-variant">
-            {studiedStationIds.length > 0 ? `Только станции, которые уже открывал (${studiedStationIds.length})` : 'Пока нет станций с прогрессом'}
-          </div>
-        </div>
-      </button>
-
-      <h2 className="mb-2 mt-6 text-sm font-semibold text-on-surface-variant">Другие режимы тренировки</h2>
-      <div className="flex flex-col gap-2">
-        {([
-          ['blocks', 'По блокам', 'grid_view', 'Собираешь порядок блок за блоком — основной способ разучить станцию'],
-          ['full', 'Всё целиком', 'drag_indicator', 'Весь алгоритм станции одним списком, без деления на блоки'],
-          ['challenge', 'Без права на ошибку', 'emergency', 'Одна ошибка в любом блоке — начинай прогон заново'],
-          ['core-diff', 'Ядро → отличия', 'compare', 'Сначала общее для всех сценариев, потом — что отличает конкретный'],
-          ['find-error', 'Найди ошибку', 'cancel', 'Два шага переставлены местами — найди и укажи оба'],
-          ['occlusion', 'Скрой и вспомни', 'auto_awesome', 'Часть слов в шаге спрятана — вспомни, потом сверься'],
-          ['voice', 'Расскажи вслух', 'forum', 'Проговори алгоритм своими словами, AI сверит с эталоном'],
-        ] as [TrainingKind, string, any, string][]).map(([kind, label, icon, desc]) => (
+      <details className="mb-4 rounded-m3-md bg-surface-container-low">
+        <summary className="cursor-pointer list-none px-3.5 py-3 text-sm font-semibold text-on-surface-variant">
+          <span className="mr-1.5 inline-block [details[open]_&]:rotate-90">›</span>
+          Ещё режимы
+        </summary>
+        <div className="flex flex-col gap-2 px-3.5 pb-3.5">
           <button
-            key={kind}
-            onClick={() => setMode(kind)}
-            className="flex items-center gap-3 rounded-m3-md bg-surface-container-low p-3 text-left"
+            onClick={() => setMode('nonstop')}
+            disabled={availableQuestions === 0}
+            className="flex items-center gap-3 rounded-m3-md bg-surface-container p-3 text-left disabled:opacity-40"
           >
-            <IconBadge icon={icon} colorKey={kind} size="sm" />
+            <IconBadge icon="check_circle" colorKey="nonstop" size="sm" />
             <div>
-              <b className="text-sm">{label}</b>
-              <div className="text-xs text-on-surface-variant">{desc}</div>
+              <b className="text-sm">Нон-стоп</b>
+              <div className="text-xs text-on-surface-variant">Весь банк вопросов подряд, без лимита времени ({availableQuestions})</div>
             </div>
           </button>
-        ))}
 
-        <button
-          onClick={() => setMode('interleave')}
-          className="flex items-center gap-3 rounded-m3-md bg-surface-container-low p-3 text-left"
-        >
-          <IconBadge icon="compare" colorKey="interleave" size="sm" />
-          <div>
-            <b className="text-sm">Интерливинг</b>
-            <div className="text-xs text-on-surface-variant">Блоки вперемешку из разных станций за одну сессию</div>
-          </div>
-        </button>
-      </div>
+          <button
+            onClick={() => setMode('mixed-studied')}
+            disabled={studiedStationIds.length === 0}
+            className="flex items-center gap-3 rounded-m3-md bg-surface-container p-3 text-left disabled:opacity-40"
+          >
+            <IconBadge icon="workspace_premium" colorKey="mixed-studied" size="sm" />
+            <div>
+              <b className="text-sm">По пройденным</b>
+              <div className="text-xs text-on-surface-variant">
+                {studiedStationIds.length > 0 ? `Только станции, которые уже открывал (${studiedStationIds.length})` : 'Пока нет станций с прогрессом'}
+              </div>
+            </div>
+          </button>
+
+          <button onClick={() => setMode('interleave')} className="flex items-center gap-3 rounded-m3-md bg-surface-container p-3 text-left">
+            <IconBadge icon="compare" colorKey="interleave" size="sm" />
+            <div>
+              <b className="text-sm">Интерливинг</b>
+              <div className="text-xs text-on-surface-variant">Блоки вперемешку из разных станций за одну сессию</div>
+            </div>
+          </button>
+
+          <button onClick={() => setMode('examday')} className="flex items-center gap-3 rounded-m3-md bg-surface-container p-3 text-left">
+            <IconBadge icon="check_circle" colorKey="examday" size="sm" />
+            <div>
+              <b className="text-sm">Чек-лист экзаменационного дня</b>
+              <div className="text-xs text-on-surface-variant">Логистика (документы, дорога, сборы) — не медицина</div>
+            </div>
+          </button>
+
+          <div className="mt-1 border-t border-outline-variant pt-2 text-xs font-semibold text-on-surface-variant">Тренировка конкретной станции</div>
+
+          {([
+            ['blocks', 'По блокам', 'grid_view', 'Собираешь порядок блок за блоком — основной способ разучить станцию'],
+            ['full', 'Всё целиком', 'drag_indicator', 'Весь алгоритм станции одним списком, без деления на блоки'],
+            ['challenge', 'Без права на ошибку', 'emergency', 'Одна ошибка в любом блоке — начинай прогон заново'],
+            ['core-diff', 'Ядро → отличия', 'compare', 'Сначала общее для всех сценариев, потом — что отличает конкретный'],
+            ['find-error', 'Найди ошибку', 'cancel', 'Два шага переставлены местами — найди и укажи оба'],
+            ['occlusion', 'Скрой и вспомни', 'auto_awesome', 'Часть слов в шаге спрятана — вспомни, потом сверься'],
+            ['voice', 'Расскажи вслух', 'forum', 'Проговори алгоритм своими словами, AI сверит с эталоном'],
+          ] as [TrainingKind, string, any, string][]).map(([kind, label, icon, desc]) => (
+            <button key={kind} onClick={() => setMode(kind)} className="flex items-center gap-3 rounded-m3-md bg-surface-container p-3 text-left">
+              <IconBadge icon={icon} colorKey={kind} size="sm" />
+              <div>
+                <b className="text-sm">{label}</b>
+                <div className="text-xs text-on-surface-variant">{desc}</div>
+              </div>
+            </button>
+          ))}
+        </div>
+      </details>
 
       {chartAttempts.length > 1 && <ExamHistoryChart attempts={[...chartAttempts].reverse()} />}
 

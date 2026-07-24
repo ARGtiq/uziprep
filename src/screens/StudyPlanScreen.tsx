@@ -11,7 +11,7 @@ interface PlanStep {
   action?: { label: string; kind: 'uzi-ritual' | 'oske-structure' | 'action-pattern' | 'station'; stationId?: string };
 }
 
-const STEPS: PlanStep[] = [
+export const STEPS: PlanStep[] = [
   {
     id: 'uzi-ritual',
     title: '1. УЗИ-ритуал',
